@@ -1,19 +1,66 @@
+#include <iostream> //for cout
+#include <stdlib.h> //for atoi, srand, rand
+#include <time.h>  //for time
 #include "logMngr.h"
+#include "logMsgFormatterWriter.h"
 
-void* writeToLog (void*args)
+int numOfThreads = 0;
+int messagesPerThread = 0;
+int flushMessagesPrecent = 0;
+
+logMngr* pLogger = 0;
+
+void* writeToLog (void* args)
 {
-	// in loop, of how many messages to write:
-		//get random number 0-100. if it is less than the flush percent - write it as FATAL. otherwise as info
-		//write serial number as the function name
-		//write variable length string as message text
-		// Send it to the logger
+   pid_t tid = pthread_self();
+   for (int i = 0; i < messagesPerThread; ++i )
+   {
+   //   srand (time(NULL));  // We do not want srand, so we can repeat the same test...
+      int severity = 100- (rand () % 100);
+      //TODO: change message text and function to something more interesting...
+      //TODO: add some king of tacing on messages (id)
+      pLogger->write ("Message Text","Thisfunctionname", time(NULL),  tid, severity);
+   }
 }
 
-int main ()
+void printHelp (const char i_pExeName[])
 {
-	// read how many threads to run
-	// How many log each thread should write
-	// and precents, who many flushing msgs 
-	// create threads start func : writeToLog
-	// run each one of them on deferent core
+   std::cout <<"Usage: " <<i_pExeName <<" <Number of threads> <How many messages per threads> <precentage of flush messages(this will also be set as the flush severity)> \n";
+}
+
+int main (int argc, char* argv[])
+{
+   if ( argc != 4 )
+   {
+      printHelp (argv[0]);
+      return -1;
+   } else {
+      numOfThreads = atoi (argv[1]);
+      messagesPerThread = atoi (argv[2]);
+      flushMessagesPrecent = atoi (argv[3]);
+      if (numOfThreads <= 0 || messagesPerThread <= 0 || flushMessagesPrecent <= 0 )
+      {
+         printHelp(argv[0]);
+         return -1;
+      }
+      std::cout << "Going to create "<< numOfThreads <<" Threads. Each one will send "<< messagesPerThread << " messages, " <<flushMessagesPrecent <<"percent of them will require flush \n";
+      // init logger
+      fileLogFormatterWritter* pLogWriter = new fileLogFormatterWritter(stdout); 
+      pLogger = new logMngr (flushMessagesPrecent, pLogWriter); 
+
+      // create threads start func 
+      pthread_t t[numOfThreads] ; 
+      for(int i = 0; i < numOfThreads; ++i)
+      {
+         //TODO: retval, args, cores...
+         pthread_create (&t[i], 0, writeToLog, 0);
+      }
+      for(int i = 0; i < numOfThreads; ++i)
+      {
+         //TODO: retval
+         void* ret;
+         pthread_join(t[i], &ret);
+      }
+
+   }
 }

@@ -1,4 +1,5 @@
 #include "logMngr.h"
+#include <iostream> // for std::cerr(debug)
 
 unsigned int logMngr::getNextIndex () 
 { 
@@ -16,7 +17,10 @@ int logMngr::flushMessages (unsigned int i_curIndex)
 	//TODO: implement!
 }
 
-int logMngr::write (const char* i_pMsgText, const char* i_pfunc, time_t i_time, pid_t i_pid, int i_severity)
+int logMngr::write (const char *const  i_pMsgText, const char *const  i_pFunc, time_t i_time, pid_t i_pid, int i_severity)
 {
+#if 1 //TODO: only for debug:
+   std::cerr <<i_time<<":"<<i_pid<<":"<<i_severity<<":"<<i_pFunc<<":"<<i_pMsgText<<"\n";
+#endif 
 	//TODO: implement!
 }

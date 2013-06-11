@@ -1,3 +1,5 @@
+#ifndef LOG_MSG_FORMATTER_WRITER
+#define LOG_MSG_FORMATTER_WRITER
 
 #include <stdio.h> //for fprintf
 
@@ -23,3 +25,5 @@ class fileLogFormatterWritter : public logMsgFormatterWriter
         private:
         FILE* m_outputFile;
 };
+
+#endif

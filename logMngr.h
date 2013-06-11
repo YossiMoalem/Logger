@@ -22,7 +22,7 @@ class logMngr
 			m_pLogMsgFormatterWriter(i_pLogMsgFormatterWriter)
 		 {}
 
-		int write (const char* i_pMsgText, const char* i_pfunc, time_t i_time, pid_t i_pid, int i_severity);
+		int write (const char *const  i_pMsgText, const char*const  i_pfunc, time_t i_time, pid_t i_pid, int i_severity);
 };
 
 #endif

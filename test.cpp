@@ -44,21 +44,22 @@ int main (int argc, char* argv[])
       fileLogFormatterWritter* pLogWriter = new fileLogFormatterWritter(stdout); 
       logMngr* pLogger = new logMngr (flushMessagesPrecent, pLogWriter); 
 
-      #pragma omp parallel num_threads(3)
-      #pragma omp for
-      for (int i = 0; i < numOfMessages; ++i )
+#pragma omp parallel num_threads(3)
       {
-         //   srand (time(NULL));  // We do not want srand, so we can repeat the same test...
-         int severity = 100- (rand () % 100);
-         //TODO: change message text and function to something more interesting...
-         char message[200];
-         randString(200, message);
+         pid_t myPid = (pid_t)omp_get_thread_num();
+#pragma omp for private (myPid)
+         for (int i = 0; i < numOfMessages; ++i )
+         {
+            //   srand (time(NULL));  // We do not want srand, so we can repeat the same test...
+            int severity = 100- (rand () % 100);
+            char message[200];
+            randString(200, message);
 
-         char messageID [100] = {0};
-         snprintf (messageID, 100, "Message %d", i);
+            char messageID [100] = {0};
+            snprintf (messageID, 100, "Message %d", i);
 
-         pLogger->write (message, messageID, time(NULL),  (pid_t)omp_get_thread_num(), severity);
+            pLogger->write (message, messageID, time(NULL),  myPid, severity);
+         }
       }
-
    }
 }

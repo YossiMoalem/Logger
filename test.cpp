@@ -1,4 +1,4 @@
-# include <omp.h>       //for omp_get_thread_num
+#  include <omp.h>       //for omp_get_thread_num
 // ** Compile with -fopenmp  ** \\
 
 #include <iostream>     //for cout
@@ -24,7 +24,7 @@ void randString (int i_buffSize, char o_buff[])
    }
    o_buff[len] = 0;
 }
-int main (int argc, char* argv[])
+     int main (int argc, char* argv[])
 {
    if ( argc != 4 )
    {
@@ -44,22 +44,20 @@ int main (int argc, char* argv[])
       fileLogFormatterWritter* pLogWriter = new fileLogFormatterWritter(stdout); 
       logMngr* pLogger = new logMngr (flushMessagesPrecent, pLogWriter); 
 
-#pragma omp parallel num_threads(3)
+      pid_t myPid = -1;
+#pragma omp parallel for private (myPid) num_threads(numOfThreads) schedule(dynamic,1)
+      for (int i = 0; i < numOfMessages; ++i )
       {
-         pid_t myPid = (pid_t)omp_get_thread_num();
-#pragma omp for private (myPid)
-         for (int i = 0; i < numOfMessages; ++i )
-         {
-            //   srand (time(NULL));  // We do not want srand, so we can repeat the same test...
-            int severity = 100- (rand () % 100);
-            char message[200];
-            randString(200, message);
+         myPid = (pid_t)omp_get_thread_num();
+         //   srand (time(NULL));  // We do not want srand, so we can repeat the same test...
+         int severity = 100- (rand () % 100);
+         char message[201];
+         randString(20, message);
 
-            char messageID [100] = {0};
-            snprintf (messageID, 100, "Message %d", i);
+         char messageID [100] = {0};
+         snprintf (messageID, 100, "Message %d", i);
 
-            pLogger->write (message, messageID, time(NULL),  myPid, severity);
-         }
+         pLogger->write (message, messageID, time(NULL),  myPid, severity);
       }
    }
 }

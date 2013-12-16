@@ -1,8 +1,8 @@
 #ifndef LOG_MSG_FORMATTER_WRITER
 #define LOG_MSG_FORMATTER_WRITER
 
-#include <stdio.h> //for fprintf
-
+#include <stdio.h>
+ 
 class logMsgFormatterWriter
 {
 	public:
@@ -21,7 +21,8 @@ class fileLogFormatterWritter : public logMsgFormatterWriter
       virtual  void write (const char* i_pMsgText, const char* i_pFuncName, time_t i_time, pid_t i_tid, int i_severity) 
       {
 
-         fprintf(m_outputFile, "Severity %d:  Time  %ld: ThreadID %d: FuncName %s: Message %s\n",i_severity, i_time, i_tid, i_pFuncName, i_pMsgText);
+         fprintf(m_outputFile, "Severity %d: Time %ld: ThreadID %d: FuncName %s: Message %s\n",i_severity, i_time, i_tid, i_pFuncName, i_pMsgText);
+
       }
 
       virtual void startBlock ()

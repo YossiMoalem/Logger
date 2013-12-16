@@ -3,11 +3,23 @@
 
 #include "logMsgEntity.h"
 #include "outputHandler.h"
+#include "entityIdentifierType.h"
 #include <queue>
 #include <pthread.h> 
 
+#include <iostream>
+#include <sstream>
+
 #define NUM_OF_RECORDS_TO_FLUSH 20 
-#define NUM_OF_LOG_MSGS  (NUM_OF_RECORDS_TO_FLUSH*4)
+#define NUM_OF_LOG_MSGS  (NUM_OF_RECORDS_TO_FLUSH*10)
+
+#define PRINT_DEBUG(MSG) do{\
+std::stringstream ss;\
+ss<< MSG <<std::endl;\
+std::cerr << ss.str();\
+}while(0);
+
+
 class logMngr
 {
 	friend class outputHandler;
@@ -16,29 +28,29 @@ class logMngr
 
         logMngr (int i_flushSeverity,  logMsgFormatterWriter* i_pLogMsgFormatterWriter );
         ~logMngr();
-		int write (const char *const  i_pMsgText, const char*const  i_pfunc, time_t i_time, pid_t i_pid, int i_severity);
-        void startBlock();
-        void writeError (const char* i_pErrorMessage);
-
+		int write (const char *const  i_pMsgText, const char*const  i_pfuncName, time_t i_time, pid_t i_tid, int i_severity);
+        void shutDown ();
       
    private:     
-		typedef unsigned long long EntryIdentifierType ;
-		
-        void getNextIndex (unsigned int &o_index,unsigned int& o_lifeID); 
-		int flushMessages (unsigned int i_curIndex);
+
+		int flushMessages (entityIdentifierType::entity_identifier_t i_entryIdentifier); 
         static void * startOutputWriterThread (void * i_logMngr);
+        void startBlock();
+        void writeError (const char* i_pErrorMessage);
      
    private:
         logMsgEntity                m_msgs[NUM_OF_LOG_MSGS] ;
-        EntryIdentifierType         m_curEntryIndent;
 		int 		                m_flushSeverity;
 		logMsgFormatterWriter*      m_pLogMsgFormatterWriter;
-        pthread_t                   m_outputWriter;
+        entityIdentifierType        m_entityIdentifierType;
+
          
          //TODO change to lock free queue
-        std::queue<unsigned int>    m_queueFlushStartIndex;
+        std::queue<entityIdentifierType::entity_identifier_t>    m_queueFlushStartIndex;
         pthread_mutex_t             m_startIndexMutex;
+        pthread_mutex_t             m_shutDownMutex;
+
 
 };
 
-#endif
+ #endif

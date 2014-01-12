@@ -30,7 +30,7 @@ class logMsgEntity
 
     int set (const char* i_pNewMsg, const char* i_pFuncName, time_t i_time, pid_t i_tid, int i_severity,unsigned int i_lifeID);
 	int write (logMsgFormatterWriter* i_logMsgFormatterWriter ,unsigned int i_expectedLifeID);
-    unsigned int getLifeID() volatile { return m_lifeID; }
+    unsigned int getLifeID() { return m_lifeID; }
     
     private :
 

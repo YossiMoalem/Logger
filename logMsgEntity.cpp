@@ -1,4 +1,5 @@
 #include "logMsgEntity.h"
+#include "loggerStatistics.h"
 
 	logMsgEntity::logMsgEntity() : m_state (MS_Unused),m_lifeID (0)
 	{
@@ -35,10 +36,12 @@
               }
               break;
            case MS_InProgress:
+              loggerStatistics::instance()->inc_counter(loggerStatistics::logMsgEntity_setWhileInProgress);
               //TODO : Need to handle 
               retval  = -1;
               break;
            case MS_BeingFlushed:
+              loggerStatistics::instance()->inc_counter(loggerStatistics::logMsgEntity_setWhileBeingFlushed);
               //TODO: What to do here??????
               retval  = -1;
              break;
@@ -60,9 +63,11 @@
 				break;
 			case MS_InProgress:
 				//TODO : do we really want this? if not also chamge if (m_state != MS_InProgress || m_state != MS_Flushed)
+                //Notice, it cound be that "our" msg is being overwritten, and we have nothing to do now
+                //BUT it coulld also be that our msg is just being writen, so we should wait for it (?) ...
 				m_state = MS_Flushed;
 				i_logMsgFormatterWriter->write ("Massage is missing here ", "Internal Logger Error", 0, -1, 0);
-				break;
+               return -1;
 			case MS_Ready:
 				m_state = MS_BeingFlushed;
                 if (m_lifeID != i_expectedLifeID)
@@ -74,9 +79,10 @@
 				m_state = MS_Flushed;
 				break;
 			case MS_BeingFlushed:
+                loggerStatistics::instance()->inc_counter(loggerStatistics::logMsgEntity_writeWhileBeingFlushed);
 				//TODO: What to do here??????
 				//Maybe do flash it, and mark it as flused, so when we finish the first flush, we'll know we had this message twice???
-				break;
+               return -1;
 			case MS_Flushed:
 				//Already flushed this message. Nothing to do ....
 				break;

@@ -1,29 +1,31 @@
-# include "outputHandler.h"
-#include "entityIdentifierType.h"
+#include "outputHandler.h"
+#include "msgTokenMngr.h"
+#include "loggerStatistics.h"
 #include "logMngr.h"
+#include "utils.h"
 #include <sched.h>
 
-outputHandler::outputHandler(logMngr & i_logMngr):m_logMngr(i_logMngr)
+outputHandler::outputHandler()
 {
 }
 
 
-int outputHandler::doSomething()
+void *  outputHandler::startOutputWriterThread(void *i_logMngr)
 {
    bool shouldContinue = true;
+  logMngr*  pLogMngr = static_cast <logMngr*> (i_logMngr);
    while (true == shouldContinue)
    {
       // TODO change the busy loop on the empty queue condition
-      while (!m_logMngr.m_queueFlushStartIndex.empty())
+      while (!pLogMngr->m_queueFlushStartIndex.empty())
       {
-         entityIdentifierType::entity_identifier_t  entryIdentifier = m_logMngr.m_queueFlushStartIndex.front();
-         m_logMngr.m_queueFlushStartIndex.pop();
+         msgTokenMngr::msg_token_t  entryIdentifier = pLogMngr->m_queueFlushStartIndex.front();
+         pLogMngr->m_queueFlushStartIndex.pop();
          
          if (IS_SHUTDOWN_IDENT(entryIdentifier))
          {
             shouldContinue = false;
             break;
-
          }
 
          unsigned int startIndex = GET_CUR_INDEX(entryIdentifier);
@@ -31,9 +33,9 @@ int outputHandler::doSomething()
          unsigned int expectedLifeID = startLifeID;
 
 #if DEBUG >= 2
-         PRINT_DEBUG ("Poped identifier " <<entryIdentifier
+         PRINT_DEBUG ("Popped identifier " <<entryIdentifier
                <<"(Index : " <<startIndex 
-               <<"LifeID : " <<startLifeID );
+               <<"LifeID : " <<startLifeID <<")");
 #endif
 
          int curIndex =  startIndex - NUM_OF_RECORDS_TO_FLUSH + 1;
@@ -50,34 +52,45 @@ int outputHandler::doSomething()
                --expectedLifeID;
             }
          }
-         m_logMngr.startBlock();
+         pLogMngr->startBlock();
          bool shouldContinue = true;
          bool lastPrinted = false;
 
          while (true == shouldContinue)
          {
             int cpuYieldCounter = 0;
-            while (expectedLifeID >  m_logMngr.m_msgs[curIndex].getLifeID())
+            while (expectedLifeID >  pLogMngr->m_msgs[curIndex].getLifeID())
             {
-#if DEBUG >= 7
-               const int mask = ~(1024);
+#if DEBUG >= 7 || defined STATISTICS
                ++ cpuYieldCounter; 
-               cpuYieldCounter &= mask;
+               cpuYieldCounter %= 1024;
                if (cpuYieldCounter == 0)
                {
-                  PRINT_DEBUG ("CPU yield 1024 times for expected LID " << expectedLifeID <<" Got LID: " <<m_logMngr.m_msgs[curIndex].getLifeID() <<" Index = " << curIndex <<" Expected LID:" << CREATE_ENTRY_IDENT(expectedLifeID, curIndex))
-               }
-#endif
+                  loggerStatistics::instance()->inc_counter(loggerStatistics::outputWritter_CpuYield);
+	#if DEBUG >= 7
+                  PRINT_DEBUG ("CPU yield 1024 times for expected LID " << expectedLifeID 
+                                 <<" Got LID: " <<pLogMngr->m_msgs[curIndex].getLifeID() 
+                                 <<" Index = " << curIndex 
+                                 <<" Expected Token:" << CREATE_ENTRY_IDENT(expectedLifeID, curIndex))
+	#endif   // DEBUG >= 7          
+			   }
+#endif	//DEBUG >= 7 || defined STATISTICS
                sched_yield();
             }
 
-            if (m_logMngr.m_msgs[curIndex].getLifeID() > expectedLifeID)
+            if (pLogMngr->m_msgs[curIndex].getLifeID() > expectedLifeID)
             {
-               m_logMngr.writeError("the entry was overwritten during the flush");
+               loggerStatistics::instance()->inc_counter(loggerStatistics::outputWritter_overwrittenMsgs);
+               pLogMngr->writeError("the entry was overwritten during the flush");
+#if DEBUG >= 4
+               PRINT_DEBUG("Message index " <<curIndex<<" was overwritten during flash."
+                     <<"Expected LID = " <<expectedLifeID 
+                     <<" got LID : " << pLogMngr->m_msgs[curIndex].getLifeID());
+#endif
             }
             else
             {   
-               m_logMngr.m_msgs[curIndex].write(m_logMngr.m_pLogMsgFormatterWriter,expectedLifeID);
+               pLogMngr->m_msgs[curIndex].write(pLogMngr->m_pLogMsgFormatterWriter,expectedLifeID);
             }
             
             ++curIndex;
@@ -95,6 +108,6 @@ int outputHandler::doSomething()
          }
       }//end while queue not empty
    }// end while should continue
-   pthread_mutex_unlock(&(m_logMngr.m_shutDownMutex));
+   pthread_mutex_unlock(&(pLogMngr->m_shutDownMutex));
    return 0;
 }

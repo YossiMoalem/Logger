@@ -2,22 +2,12 @@
 #define LOG_MNGR_H
 
 #include "logMsgEntity.h"
-#include "outputHandler.h"
-#include "entityIdentifierType.h"
+#include "msgTokenMngr.h"
 #include <queue>
 #include <pthread.h> 
 
-#include <iostream>
-#include <sstream>
-
 #define NUM_OF_RECORDS_TO_FLUSH 20 
 #define NUM_OF_LOG_MSGS  (NUM_OF_RECORDS_TO_FLUSH*10)
-
-#define PRINT_DEBUG(MSG) do{\
-std::stringstream ss;\
-ss<< MSG <<std::endl;\
-std::cerr << ss.str();\
-}while(0);
 
 
 class logMngr
@@ -33,8 +23,7 @@ class logMngr
       
    private:     
 
-		int flushMessages (entityIdentifierType::entity_identifier_t i_entryIdentifier); 
-        static void * startOutputWriterThread (void * i_logMngr);
+		int flushMessages (msgTokenMngr::msg_token_t i_entryIdentifier); 
         void startBlock();
         void writeError (const char* i_pErrorMessage);
      
@@ -42,11 +31,11 @@ class logMngr
         logMsgEntity                m_msgs[NUM_OF_LOG_MSGS] ;
 		int 		                m_flushSeverity;
 		logMsgFormatterWriter*      m_pLogMsgFormatterWriter;
-        entityIdentifierType        m_entityIdentifierType;
+        msgTokenMngr        m_msgTokenMngr;
 
          
          //TODO change to lock free queue
-        std::queue<entityIdentifierType::entity_identifier_t>    m_queueFlushStartIndex;
+        std::queue<msgTokenMngr::msg_token_t>    m_queueFlushStartIndex;
         pthread_mutex_t             m_startIndexMutex;
         pthread_mutex_t             m_shutDownMutex;
 

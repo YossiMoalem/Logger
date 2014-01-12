@@ -7,14 +7,10 @@ class outputHandler
 {
    public:
 
-       outputHandler(logMngr & i_logMngr);
+       outputHandler();
       ~outputHandler();
-      int doSomething();
+        static void * startOutputWriterThread (void * i_logMngr);
 
-   private:
-
-   private:
-      logMngr &m_logMngr;
 
 };
 

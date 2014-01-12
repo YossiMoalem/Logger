@@ -1,5 +1,5 @@
 #  include <omp.h>       //for omp_get_thread_num
-// ** Compile with -fopenmp  ** \\
+// ** Compile with -fopenmp  ** 
 
 #include <iostream>     //for cout
 #include <stdlib.h>     //for atoi, srand, rand
@@ -52,7 +52,7 @@ int main (int argc, char* argv[])
 
       // init logger
       fileLogFormatterWritter* pLogWriter = new fileLogFormatterWritter(stdout); 
-      logMngr* pLogger = new logMngr (flushMessagesPrecent, pLogWriter); 
+      logMngr* pLogger = new logMngr (100 - flushMessagesPrecent, pLogWriter); 
 const int lastfMsgIndex = sizeof(messages)/sizeof (char*)-1;
       pid_t myPid = -1;
 
@@ -63,7 +63,7 @@ const int lastfMsgIndex = sizeof(messages)/sizeof (char*)-1;
          myPid = (pid_t)omp_get_thread_num();
 
          //   srand (time(NULL));  // We do not want srand, so we can repeat the same test...
-         int severity = 100- (rand () % 100);
+         int severity = (rand () % 100);
 
 #ifdef RANDOM_MESAGE
          char message[201];
@@ -72,9 +72,9 @@ const int lastfMsgIndex = sizeof(messages)/sizeof (char*)-1;
         const char* message = messages[i%lastfMsgIndex];
 #endif
          char messageID [100] = {0};
-         //snprintf (messageID, 100, "Message %d", i);
+         snprintf (messageID, 100, "Message %d", i);
 
-         pLogger->write (message, "messageID", time(NULL),  myPid, severity);
+         pLogger->write (message, messageID, time(NULL),  myPid, severity);
       }
       pLogger->shutDown();
    }

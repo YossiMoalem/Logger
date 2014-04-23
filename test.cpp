@@ -29,6 +29,25 @@ void randString (int i_buffSize, char o_buff[])
 }
 
 //==================================================================================================================================================
+void f1 (logMngr* pLogger, const char *const  i_pMsgText, const char *const  i_pFuncName, time_t i_time, pid_t i_tid, int i_severity,bool i_writeStack)  
+{ 
+   pLogger->write(i_pMsgText, i_pFuncName, i_time, i_tid, i_severity, i_writeStack);
+}
+void f2 (logMngr* pLogger, const char *const  i_pMsgText, const char *const  i_pFuncName, time_t i_time, pid_t i_tid, int i_severity,bool i_writeStack) 
+{ f1(pLogger, i_pMsgText, i_pFuncName, i_time, i_tid, i_severity, i_writeStack); }
+
+void f3 (logMngr* pLogger, const char *const  i_pMsgText, const char *const  i_pFuncName, time_t i_time, pid_t i_tid, int i_severity,bool i_writeStack) 
+{ f2(pLogger, i_pMsgText, i_pFuncName, i_time, i_tid, i_severity, i_writeStack); }
+
+void f4 (logMngr* pLogger, const char *const  i_pMsgText, const char *const  i_pFuncName, time_t i_time, pid_t i_tid, int i_severity,bool i_writeStack) 
+{ f3(pLogger, i_pMsgText, i_pFuncName, i_time, i_tid, i_severity, i_writeStack); }
+
+void f5 (logMngr* pLogger, const char *const  i_pMsgText, const char *const  i_pFuncName, time_t i_time, pid_t i_tid, int i_severity,bool i_writeStack) 
+{ f4(pLogger, i_pMsgText, i_pFuncName, i_time, i_tid, i_severity, i_writeStack); }
+
+void f6 (logMngr* pLogger, const char *const  i_pMsgText, const char *const  i_pFuncName, time_t i_time, pid_t i_tid, int i_severity,bool i_writeStack) 
+{ f5(pLogger, i_pMsgText, i_pFuncName, i_time, i_tid, i_severity, i_writeStack); }
+
 int main (int argc, char* argv[])
 {
    // Get input:
@@ -46,10 +65,11 @@ int main (int argc, char* argv[])
          printHelp(argv[0]);
          return -1;
       }
+      /*
       std::cout << "Going to create "<< numOfThreads <<" Threads. "
          <<"They will send "<< numOfMessages << " messages, " 
          <<flushMessagesPrecent <<" percent of them will require flush \n";
-
+*/
       // init logger
       fileLogFormatterWritter* pLogWriter = new fileLogFormatterWritter(stdout); 
       logMngr* pLogger = new logMngr (100 - flushMessagesPrecent, pLogWriter); 
@@ -74,7 +94,8 @@ const int lastfMsgIndex = sizeof(messages)/sizeof (char*)-1;
          char messageID [100] = {0};
          snprintf (messageID, 100, "Message %d", i);
 
-         pLogger->write (message, messageID, time(NULL),  myPid, severity);
+       //  pLogger->write (message, messageID, time(NULL),  myPid, severity,true);
+         f6 (pLogger, message, messageID, time(NULL),  myPid, severity,false);
       }
       pLogger->shutDown();
    }

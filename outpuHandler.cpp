@@ -59,6 +59,7 @@ void *  outputHandler::startOutputWriterThread(void *i_logMngr)
          while (true == shouldContinue)
          {
             int cpuYieldCounter = 0;
+            //TODO: RACE!!!!
             while (expectedLifeID >  pLogMngr->m_msgs[curIndex].getLifeID())
             {
 #if DEBUG >= 7 || defined STATISTICS

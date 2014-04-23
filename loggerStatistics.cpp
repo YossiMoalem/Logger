@@ -19,7 +19,9 @@ loggerStatistics::loggerStatistics ()
 }
 void loggerStatistics::print ()
 {
+#ifdef STATISTICS
    PRINT_DEBUG ("******* Statistics **********");
    for (int i = 0; i < counter_last; ++i)
       PRINT_DEBUG(CounterDesc[i]<<  " : " << m_countersValue[i] );
+#endif
 }

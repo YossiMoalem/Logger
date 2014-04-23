@@ -6,12 +6,15 @@
 #include <string.h>//for strncpy
 #include <stdio.h> //for sprintf
 #include <assert.h> //for assert...
-
+#include <pthread.h>//for the mutex
 
 #include "logMsgFormatterWriter.h"
+#include "stackwalker.h"
+
 
 #define MAX_MSG_TEXT_SIZE  200
 #define MAX_FUNC_NAME_SIZE 100
+#define STACK_SIZE 5
 
 class logMsgEntity
 {
@@ -28,7 +31,7 @@ class logMsgEntity
 
     logMsgEntity();
 
-    int set (const char* i_pNewMsg, const char* i_pFuncName, time_t i_time, pid_t i_tid, int i_severity,unsigned int i_lifeID);
+    int set (const char* i_pNewMsg, const char* i_pFuncName, time_t i_time, pid_t i_tid, int i_severity,unsigned int i_lifeID,bool i_writeStack);
 	int write (logMsgFormatterWriter* i_logMsgFormatterWriter ,unsigned int i_expectedLifeID);
     unsigned int getLifeID() { return m_lifeID; }
     
@@ -41,6 +44,11 @@ class logMsgEntity
 	pid_t				m_tid;
 	int 				m_severity;
     unsigned int        m_lifeID;
+   Stackwalker::stackFrameAddr m_stack[STACK_SIZE];
+
+#ifndef NOLOCK
+    pthread_mutex_t     m_lock;
+#endif    
 };
 
 #endif

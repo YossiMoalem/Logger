@@ -50,7 +50,7 @@ int logMngr::flushMessages (msgTokenMngr::msg_token_t i_entryIdentifier)
 
 
 //==================================================================================================================================================
-int logMngr::write (const char *const  i_pMsgText, const char *const  i_pFuncName, time_t i_time, pid_t i_tid, int i_severity)
+int logMngr::write (const char *const  i_pMsgText, const char *const  i_pFuncName, time_t i_time, pid_t i_tid, int i_severity,bool i_writeStack)
 {
    unsigned int curIndex = 0;
    unsigned int curLifeID = 0;
@@ -73,7 +73,7 @@ int logMngr::write (const char *const  i_pMsgText, const char *const  i_pFuncNam
        << " FuncName: "   << i_pFuncName 
        << " Message: "   <<i_pMsgText);
 #endif 
-  while(0 != m_msgs[curIndex].set(i_pMsgText,i_pFuncName,i_time,i_tid,i_severity,curLifeID))
+  while(0 != m_msgs[curIndex].set(i_pMsgText,i_pFuncName,i_time,i_tid,i_severity,curLifeID,i_writeStack))
   {
      //TODO need to handle/yield....
   }

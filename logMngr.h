@@ -18,7 +18,7 @@ class logMngr
 
         logMngr (int i_flushSeverity,  logMsgFormatterWriter* i_pLogMsgFormatterWriter );
         ~logMngr();
-		int write (const char *const  i_pMsgText, const char*const  i_pfuncName, time_t i_time, pid_t i_tid, int i_severity);
+		int write (const char *const  i_pMsgText, const char*const  i_pfuncName, time_t i_time, pid_t i_tid, int i_severity,bool i_writeStack);
         void shutDown ();
       
    private:     

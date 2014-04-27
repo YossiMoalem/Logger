@@ -1,0 +1,19 @@
+URGENT:
+Race in output handler (Marked in the code)
+Deadlock in shutdown
+crash under load.
+
+Important:
+Change the bussy loop in output handlet to cond. var.
+
+Improve:
+Extract the output queue (the flash indexes) to a standalone class. Think about the container...
+memmove (instead of memcpy)
+Add non-copyable to relevant classes
+typedefs for LID, Index
+
+Features:
+function names: (__prety_function__)
+demangle in stakwalker
+liune numbers in stackwalker.
+

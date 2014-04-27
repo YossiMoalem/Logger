@@ -12,8 +12,9 @@
 #define ATOMIC_DEC(X) asm volatile ("lock ;decl %0"\
                                     : "+m" (X));
 #else
-#define ATOMIC_INC(X)
-#define ATOMIC_DEC(X)
+//Suppress the unused variable warning
+#define ATOMIC_INC(X) (void)(X)
+#define ATOMIC_DEC(X) (void)(X)
 #endif
 
 class loggerStatistics
@@ -70,6 +71,7 @@ void loggerStatistics::inc_counter(Counter i_counter)
 {
    ATOMIC_INC(m_countersValue[i_counter]);
 }
+
 void loggerStatistics::dec_counter(Counter i_counter)
 {
    ATOMIC_DEC(m_countersValue[i_counter]);

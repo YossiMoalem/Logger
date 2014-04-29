@@ -1,7 +1,6 @@
 #ifndef STACK_WALKER_H
 #define STACK_WALKER_H
 
-#include <iostream> //for sts::cout in  testing func
 #include <stdio.h>//for snprintf
 #include <dlfcn.h> //for dl_info, dladdr
 

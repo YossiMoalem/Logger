@@ -3,6 +3,10 @@
 
 #include <stdio.h>//for snprintf
 #include <dlfcn.h> //for dl_info, dladdr
+ #include <execinfo.h> //for backrace()
+#include <stdlib.h> //for free
+#include <cxxabi.h> //for __cxa__demangle
+
 
 #define STACK_FRAME_BUF_SIZE 100
 
@@ -33,6 +37,27 @@ class Stackwalker
  *                  stackDeapth.
  ********************************************************************************/
    static int getStacktrace (unsigned int stackDeapth, stackFrameAddr o_stackFrameAddr[], unsigned int startingFrame = 0)
+   {
+#if 0 //Only enable if -fno-omit-frame-poineter, or no O in compilation!
+      return getStacktraceEBP (stackDeapth,o_stackFrameAddr[], startingFrame);
+#else
+      unsigned int requiredStackSize = stackDeapth + startingFrame;
+      stackFrameAddr stackFrameAddr[requiredStackSize];
+      unsigned int stackSize = backtrace (stackFrameAddr, requiredStackSize);
+      unsigned int curIndex = startingFrame;
+      unsigned int curPos = 0;
+      while (curIndex < stackSize)
+      {
+         o_stackFrameAddr[curPos++] = stackFrameAddr[curIndex++];
+      }
+      while (curIndex < stackDeapth)
+      {
+         o_stackFrameAddr[curPos++] = NULL;
+      }
+      return stackSize;
+#endif
+   }
+   static int getStacktraceEBP (unsigned int stackDeapth, stackFrameAddr o_stackFrameAddr[], unsigned int startingFrame = 0)
    {
       //Tie ebp and esp
       register void* ebp asm("ebp");
@@ -78,35 +103,48 @@ class Stackwalker
  * stackDeapthi     : size of the array to resolve
  * i_stackFrameAddr : array with size of at least stackDeapth, containing addresses to resolve
  * o_stackFrameName : Pre-allocated array, to which the resolved symbols will be written
+ * demangle         : should demangle the functions names
  * ******************************************************************************/
-   static void stackSymbols (int stackDeapth, stackFrameAddr i_stackFrameAddr[], stackFrameBuff o_stackFrameName[])
+   static void stackSymbols (int stackDeapth, stackFrameAddr i_stackFrameAddr[], stackFrameBuff o_stackFrameName[], bool demangle = true)
    {
       for (int i = 0; i < stackDeapth; ++i)
       {
-         __GetOneSymbol (i_stackFrameAddr[i], o_stackFrameName[i]);
+         __GetOneSymbol (i_stackFrameAddr[i], o_stackFrameName[i], demangle);
       }
    }
 
 /********************************************************************************
  * Gets and resolve the caller function
  * ******************************************************************************/
-   static void getCallerName (stackFrameBuff& o_caller)
+   static void getCallerName (bool demangle, stackFrameBuff& o_caller)
    {
-      __GetOneSymbol (__builtin_return_address(1), o_caller);
+      __GetOneSymbol (__builtin_return_address(1), o_caller, demangle);
    }
 
    private:
 /********************************************************************************
  * Resolves one address to symbol
  * ******************************************************************************/
-   static int __GetOneSymbol (stackFrameAddr i_addr, stackFrameBuff& o_name)
+   static int __GetOneSymbol (stackFrameAddr i_addr, stackFrameBuff& o_name, bool demangle)
    {
       Dl_info info;
       if ( 0 != dladdr(i_addr, &info) )
       {
          // We got info!
-         snprintf (o_name, STACK_FRAME_BUF_SIZE, "%s", info.dli_sname);
-      } else {
+         int res = -1;
+         char* demangled = NULL;
+         if (demangle)
+         {
+            demangled = abi::__cxa_demangle(info.dli_sname, NULL, NULL, &res);
+         }
+         if (!demangle || res != 0)
+         {
+            snprintf (o_name, STACK_FRAME_BUF_SIZE, "%s", info.dli_sname);
+         } else {
+            snprintf (o_name, STACK_FRAME_BUF_SIZE, "%s", demangled);
+            free (demangled);
+         } 
+      } else { //Failed to get dladdr info:
          snprintf (o_name, STACK_FRAME_BUF_SIZE, "?? %p", i_addr );
       } 
       return 0;

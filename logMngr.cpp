@@ -12,16 +12,19 @@ logMngr::logMngr (int i_flushSeverity,  logMsgFormatterWriter* i_pLogMsgFormatte
 {
    loggerStatistics::create();
 
-   pthread_mutex_init(&m_startIndexMutex, NULL);
-   pthread_mutex_init(&m_shutDownMutex, NULL);
-   pthread_mutex_lock(&m_shutDownMutex);
+   pthread_mutexattr_t startIndexMutexAttr;
+   pthread_mutexattr_settype(&startIndexMutexAttr, PTHREAD_MUTEX_ERRORCHECK); //(PTHREAD_MUTEX_RECURSIVE for prod??)
+   pthread_mutex_init(&m_startIndexMutex, &startIndexMutexAttr);
+
+   sem_init (&m_shutDownSem, 0, 1);
+   sem_wait(&m_shutDownSem);
 
    pthread_t                   outputWriterThread;
    pthread_attr_t attr;
    
    //TODO check retval
    int s = pthread_attr_init(&attr);
-    s = pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+   s = pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
 
    pthread_create(&outputWriterThread,&attr,&outputHandler::startOutputWriterThread,this);
 
@@ -73,11 +76,11 @@ int logMngr::write (const char *const  i_pMsgText, const char *const  i_pFuncNam
        << " FuncName: "   << i_pFuncName 
        << " Message: "   <<i_pMsgText);
 #endif 
-  while(0 != m_msgs[curIndex].set(i_pMsgText,i_pFuncName,i_time,i_tid,i_severity,curLifeID,i_writeStack))
-  {
-     //TODO need to handle/yield....
-  }
-
+  logMsgEntity::resultStatus res = logMsgEntity::RS_Unset;
+  do {
+       res = m_msgs[curIndex].set(i_pMsgText,i_pFuncName,i_time,i_tid,i_severity,curLifeID,i_writeStack);
+     //TODO need to handle/yield in case od retry,....
+  } while(res != logMsgEntity::RS_Success );
    return retval;
 }
 
@@ -107,7 +110,7 @@ void logMngr::shutDown()
    m_queueFlushStartIndex.push(SHUTDOWN_ENTRY);
    pthread_mutex_unlock(&m_startIndexMutex);
    //Wait for the writer to finish.
-   pthread_mutex_lock(&m_shutDownMutex);
+   sem_wait(&m_shutDownSem);
 
    loggerStatistics::instance()->print();
 }

@@ -1,8 +1,3 @@
-URGENT:
-Race in output handler (Marked in the code)
-Deadlock in shutdown
-crash under load.
-
 Important:
 Change the bussy loop in output handlet to cond. var.
 
@@ -14,6 +9,6 @@ typedefs for LID, Index
 
 Features:
 function names: (__prety_function__)
-demangle in stakwalker
-liune numbers in stackwalker.
-
+line numbers in stackwalker. (No idea how to do this, in reasenable time...)
+filter should be extracted, and put as policy
+writer -> to template

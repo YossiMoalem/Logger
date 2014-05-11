@@ -5,6 +5,7 @@
 #include "msgTokenMngr.h"
 #include <queue>
 #include <pthread.h> 
+#include <semaphore.h>
 
 #define NUM_OF_RECORDS_TO_FLUSH 20 
 #define NUM_OF_LOG_MSGS  (NUM_OF_RECORDS_TO_FLUSH*10)
@@ -37,7 +38,7 @@ class logMngr
          //TODO change to lock free queue
         std::queue<msgTokenMngr::msg_token_t>    m_queueFlushStartIndex;
         pthread_mutex_t             m_startIndexMutex;
-        pthread_mutex_t             m_shutDownMutex;
+        sem_t                       m_shutDownSem;
 
 
 };

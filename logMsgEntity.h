@@ -26,14 +26,23 @@ class logMsgEntity
 		MS_BeingFlushed = 3,
 		MS_Flushed	    = 4
 	};
+   public:
 
-	public :
+	enum resultStatus
+    {
+		RS_Unset 			= 0,
+       RS_Success            = 1,
+       RS_MsgOverWritten    = 2,
+       RS_MsgNotYetWriten   = 3,
+       RS_MsgBusy           = 4,
+       RS_InternalError     = 5,
+       RS_Last
+    };
 
     logMsgEntity();
 
-    int set (const char* i_pNewMsg, const char* i_pFuncName, time_t i_time, pid_t i_tid, int i_severity,unsigned int i_lifeID,bool i_writeStack);
-	int write (logMsgFormatterWriter* i_logMsgFormatterWriter ,unsigned int i_expectedLifeID);
-    unsigned int getLifeID() { return m_lifeID; }
+    resultStatus set (const char* i_pNewMsg, const char* i_pFuncName, time_t i_time, pid_t i_tid, int i_severity,unsigned int i_lifeID,bool i_writeStack);
+	resultStatus  write (logMsgFormatterWriter* i_logMsgFormatterWriter ,unsigned int i_expectedLifeID);
     
     private :
 

@@ -1,6 +1,6 @@
-
 #ifndef MSG_TOKEN_MNGR_H
 #define MSG_TOKEN_MNGR_H
+
 #include <boost/static_assert.hpp>
 #include <assert.h>         /* assert */
 #include "loggerStatistics.h"
@@ -14,9 +14,19 @@
 #define SHUTDOWN_ENTRY (CREATE_ENTRY_IDENT(0,0))
 #define IS_SHUTDOWN_IDENT(IDENT) ((msgTokenMngr::msg_token_t) (IDENT)  == 0) 
 
+/******************************************************************************
+ * msgTokenMngr:
+ * Each message aquire a token, using getNextIndex().
+ * This token is used to determine the cell to which the message will be written to, 
+ * and it also provides "Life ID" (LID), that is used to determine if the message 
+ * currently in the cell, is the one we are interested in, was it overwritten, or, 
+ * was it not written yet.
+ * In addition, it creates a "shutdown" token.
+ * When this token is sent to the output-writer, it flushes all messages, and shuts down.
+ *
+ * TODO: Currently, overflow of LID is not handled. 
+ ******************************************************************************/
 
-
-//static_assert (sizeof(entryIdentifierType::msg_token_t)>=8);
 
 class msgTokenMngr
 {

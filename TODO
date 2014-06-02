@@ -2,7 +2,6 @@ Important:
 Change the bussy loop in output handlet to cond. var.
 
 Improve:
-Extract the output queue (the flash indexes) to a standalone class. Think about the container...
 memmove (instead of memcpy)
 Add non-copyable to relevant classes
 typedefs for LID, Index

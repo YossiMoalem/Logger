@@ -1,6 +1,24 @@
 #ifndef LOGGER_STATISTICS_H
 #define LOGGER_STATISTICS_H
 
+/******************************************************************************\
+ * Logger Statistics:
+ * This class is used in order to monitor the operation of the logger, 
+ * by collecting several statistics mesurments.
+ * In order to activate this mechanism, STATISTICS flag should be used during compilation.
+ *
+ * Usage examle:
+ *  loggerStatistics::instance().inc_counter(msgTokenMngr_failedAttempts);
+ *
+ * Adding new counter:
+ *  add the new counter to "Counter" enum, and to "CounterDesc" array.
+ *  Call inc_counter() and dec_counter() with the new counter, as needed.
+ *
+ * TODO:
+ *  Remove the create() hack. See bellow...
+ *  Think about the counter data type.
+ ******************************************************************************/
+
 #include <stdint.h>
 #include "assert.h"
 #include "utils.h"
@@ -20,13 +38,24 @@
 class loggerStatistics
 {
    public:
+      /******************************************************************************\
+       * Get instance of the statistics manager.
+       ******************************************************************************/
       static loggerStatistics* instance()
       {
          if (s_instance == NULL)
-         assert (0);
+            assert (0);
          return s_instance;
       }
 
+      /******************************************************************************\
+       * Create and initilize the statistics manager.
+       * The reason this is not done in the instance() method, is to avoid locking
+       * As instance() can be called from several thread, TS have to be implemented.
+       * in order to avoid this, main thread should call the create(), and only than, 
+       * instance can be called.
+       * Thinking about it, this is quite an ugly hack and should be removed...
+       ******************************************************************************/
       static void create()
       {
          if (s_instance == NULL)
@@ -35,6 +64,13 @@ class loggerStatistics
             assert (0);
       }
 
+      /******************************************************************************\
+       * Defines all the mesurements.
+       * Naming conventions:
+       *    moduleName_mesurement
+       * Important!
+       *    When adding counter, do not forget to add it also in CounterDesc array!
+       ******************************************************************************/
       enum Counter
       {
          msgTokenMngr_failedAttempts = 0,
@@ -43,17 +79,32 @@ class loggerStatistics
          logMsgEntity_writeWhileBeingFlushed,
          outputWritter_CpuYield,
          outputWritter_overwrittenMsgs,
-         counter_last
+         counter_last //MUST be last!
       };
 
 
 
-      //TODO: Do we really need volataile ??
+      /******************************************************************************\
+       * This is the basic counter type.
+       * TODO: Do we really need volataile ??
+       * TODO: do we not want negative numbers??
+       ******************************************************************************/
       typedef volatile uint64_t counter_t; 
 
+      /******************************************************************************\
+       * Increase the specified counter (i_counter) by 1
+       ******************************************************************************/
       inline void inc_counter(Counter i_counter);
+
+      /******************************************************************************\
+       * Decrease the specified counter (i_counter) by 1
+       ******************************************************************************/
       inline void dec_counter(Counter i_counter);
 
+      /******************************************************************************\
+       * Prints out the statistics via PRINT_DEBUG macro
+       * called when the application terminates
+       ******************************************************************************/
       void print();
    private:
       loggerStatistics();
@@ -61,9 +112,16 @@ class loggerStatistics
    private:
       static loggerStatistics* s_instance;
 
+      /******************************************************************************\
+       * Holds all the counter values
+       ******************************************************************************/
       __attribute__ ((aligned(8))) 
+         counter_t m_countersValue[counter_last];
+      /******************************************************************************\
+       * Holds the counter descriptions. 
+       * This is printed in the statistics summery.
+       ******************************************************************************/
       static const char* const CounterDesc[counter_last] ;
-      counter_t m_countersValue[counter_last];
 
 };
 

@@ -12,18 +12,21 @@ outputHandler::outputHandler()
 
 void *  outputHandler::startOutputWriterThread(void *i_logMngr)
 {
-   bool shouldContinue = true;
-   logMngr*  pLogMngr = static_cast <logMngr*> (i_logMngr);
+   bool             shouldContinue  = true;
+   logMngr*         pLogMngr        = static_cast <logMngr*> (i_logMngr);
+   FlushTokens&     flushTokenMngr  = pLogMngr->getFlusTokenMngr();
    while (true == shouldContinue)
    {
       // TODO change the busy loop on the empty queue condition
-      while (!pLogMngr->m_queueFlushStartIndex.empty())
+      while (!flushTokenMngr.isEmpty())
       {
-         msgTokenMngr::msg_token_t  entryIdentifier = pLogMngr->m_queueFlushStartIndex.front();
-         pLogMngr->m_queueFlushStartIndex.pop();
+         msgTokenMngr::msg_token_t  entryIdentifier = flushTokenMngr.getToken();
 
          if (IS_SHUTDOWN_IDENT(entryIdentifier))
          {
+#if DEBUG >= 2
+         PRINT_DEBUG ("Popped Shutdown Msg");
+#endif
             shouldContinue = false;
             break;
          }
@@ -32,11 +35,6 @@ void *  outputHandler::startOutputWriterThread(void *i_logMngr)
          unsigned int startLifeID = GET_CUR_LIFE_ID(entryIdentifier);
          unsigned int expectedLifeID = startLifeID;
 
-#if DEBUG >= 2
-         PRINT_DEBUG ("Popped identifier " <<entryIdentifier
-               <<"(Index : " <<startIndex 
-               <<"LifeID : " <<startLifeID <<")");
-#endif
 
          int curIndex =  startIndex - NUM_OF_RECORDS_TO_FLUSH + 1;
          if (curIndex < 0)

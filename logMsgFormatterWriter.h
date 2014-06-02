@@ -10,7 +10,6 @@ class logMsgFormatterWriter
 	virtual void writeWithStack (const char* i_pMsgText, const char* i_pFuncName, time_t i_time, pid_t i_tid, int i_severity,const char i_stack[][100],int i_stackSize)  = 0;
     virtual void startBlock ()=0;
     virtual void writeError (const char* i_pErrorMessage)=0;
-
 };
 
 class fileLogFormatterWritter : public logMsgFormatterWriter
@@ -22,16 +21,15 @@ class fileLogFormatterWritter : public logMsgFormatterWriter
 
       virtual  void write (const char* i_pMsgText, const char* i_pFuncName, time_t i_time, pid_t i_tid, int i_severity) 
       {
-
-         fprintf(m_outputFile, "Severity %d: Time %ld: ThreadID %d: FuncName %s: Message %s\n",i_severity, i_time, i_tid, i_pFuncName, i_pMsgText);
+         fprintf(m_outputFile, "Severity %d: Time %ld: ThreadID %u: FuncName %s: Message %s\n",i_severity, i_time, i_tid, i_pFuncName, i_pMsgText);
 
       }
 
-	virtual void writeWithStack (const char* i_pMsgText, const char* i_pFuncName, time_t i_time, pid_t i_tid, int i_severity,const char i_stack[][100], int i_stackSize)  
+      virtual void writeWithStack (const char* i_pMsgText, const char* i_pFuncName, time_t i_time, pid_t i_tid, int i_severity,const char i_stack[][100], int i_stackSize)  
       {
-
-         fprintf(m_outputFile, "Severity %d: Time %ld: ThreadID %d: FuncName %s: Message %s at \n",i_severity, i_time, i_tid, i_pFuncName, i_pMsgText);
- //TODO: maybe skip trailing null frames?
+         write (i_pMsgText,i_pFuncName,i_time,i_tid,i_severity);
+         fprintf(m_outputFile, "at:"); 
+         //TODO: maybe skip trailing null frames?
          for (int i=0;i<i_stackSize;++i)
          {
             fprintf(m_outputFile, "%s\n",i_stack[i]);
@@ -47,6 +45,8 @@ class fileLogFormatterWritter : public logMsgFormatterWriter
       {
          fprintf(m_outputFile, "%s\n",i_pErrorMessage);
       }
+
+      virtual ~fileLogFormatterWritter(){}
    private:
       FILE* m_outputFile;
 };

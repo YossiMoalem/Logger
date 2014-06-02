@@ -2,12 +2,10 @@ Important:
 Change the bussy loop in output handlet to cond. var.
 
 Improve:
-memmove (instead of memcpy)
-Add non-copyable to relevant classes
 typedefs for LID, Index
 
 Features:
-function names: (__prety_function__)
+
 line numbers in stackwalker. (No idea how to do this, in reasenable time...)
 filter should be extracted, and put as policy
 writer -> to template

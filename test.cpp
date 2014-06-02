@@ -6,7 +6,7 @@
 #include <sched.h>
 
 #include "test.h"
-#include "logMngr.h"
+#include "smartLogger.h"
 #include "logMsgFormatterWriter.h"
 
 //==================================================================================================================================================
@@ -29,24 +29,24 @@ void randString (int i_buffSize, char o_buff[])
 }
 
 //==================================================================================================================================================
-void f1 (logMngr* pLogger, const char *const  i_pMsgText, const char *const  i_pFuncName, time_t i_time, pid_t i_tid, int i_severity,bool i_writeStack)  
+void f1 (logMngr* pLogger, const char *const  i_pMsgText,int i_severity)  
 { 
-   pLogger->write(i_pMsgText, i_pFuncName, i_time, i_tid, i_severity, i_writeStack);
+   LOG_MSG(pLogger, i_pMsgText, i_severity);
 }
-void f2 (logMngr* pLogger, const char *const  i_pMsgText, const char *const  i_pFuncName, time_t i_time, pid_t i_tid, int i_severity,bool i_writeStack) 
-{ f1(pLogger, i_pMsgText, i_pFuncName, i_time, i_tid, i_severity, i_writeStack); }
+void f2 (logMngr* pLogger, const char *const  i_pMsgText,int i_severity) 
+{ f1(pLogger, i_pMsgText, i_severity); }
 
-void f3 (logMngr* pLogger, const char *const  i_pMsgText, const char *const  i_pFuncName, time_t i_time, pid_t i_tid, int i_severity,bool i_writeStack) 
-{ f2(pLogger, i_pMsgText, i_pFuncName, i_time, i_tid, i_severity, i_writeStack); }
+void f3 (logMngr* pLogger, const char *const  i_pMsgText,int i_severity) 
+{ f2(pLogger, i_pMsgText, i_severity); }
 
-void f4 (logMngr* pLogger, const char *const  i_pMsgText, const char *const  i_pFuncName, time_t i_time, pid_t i_tid, int i_severity,bool i_writeStack) 
-{ f3(pLogger, i_pMsgText, i_pFuncName, i_time, i_tid, i_severity, i_writeStack); }
+void f4 (logMngr* pLogger, const char *const  i_pMsgText,int i_severity) 
+{ f3(pLogger, i_pMsgText, i_severity); }
 
-void f5 (logMngr* pLogger, const char *const  i_pMsgText, const char *const  i_pFuncName, time_t i_time, pid_t i_tid, int i_severity,bool i_writeStack) 
-{ f4(pLogger, i_pMsgText, i_pFuncName, i_time, i_tid, i_severity, i_writeStack); }
+void f5 (logMngr* pLogger, const char *const  i_pMsgText,int i_severity) 
+{ f4(pLogger, i_pMsgText, i_severity); }
 
-void f6 (logMngr* pLogger, const char *const  i_pMsgText, const char *const  i_pFuncName, time_t i_time, pid_t i_tid, int i_severity,bool i_writeStack) 
-{ f5(pLogger, i_pMsgText, i_pFuncName, i_time, i_tid, i_severity, i_writeStack); }
+void f6 (logMngr* pLogger, const char *const  i_pMsgText,int i_severity) 
+{ f5(pLogger, i_pMsgText, i_severity); }
 
 int main (int argc, char* argv[])
 {
@@ -72,16 +72,13 @@ int main (int argc, char* argv[])
 */
       // init logger
       fileLogFormatterWritter* pLogWriter = new fileLogFormatterWritter(stdout); 
-      logMngr* pLogger = new logMngr (100 - flushMessagesPrecent, pLogWriter); 
-const int lastfMsgIndex = sizeof(messages)/sizeof (char*)-1;
-      pid_t myPid = -1;
+      logMngr* pLogger = GET_LOGGER(100 - flushMessagesPrecent, pLogWriter); 
+      const int lastfMsgIndex = sizeof(messages)/sizeof (char*)-1;
 
       //Start creatng messages....
-#pragma omp parallel for private (myPid) num_threads(numOfThreads) schedule(dynamic,1)
+#pragma omp parallel for num_threads(numOfThreads) schedule(dynamic,1)
       for (int i = 0 ; i < numOfMessages; ++i )
       {
-         myPid = (pid_t)omp_get_thread_num();
-
          //   srand (time(NULL));  // We do not want srand, so we can repeat the same test...
          int severity = (rand () % 100);
 
@@ -95,8 +92,9 @@ const int lastfMsgIndex = sizeof(messages)/sizeof (char*)-1;
          snprintf (messageID, 100, "Message %d", i);
 
        //  pLogger->write (message, messageID, time(NULL),  myPid, severity,true);
-         f6 (pLogger, message, messageID, time(NULL),  myPid, severity,false);
+         f6 (pLogger, message, severity);
       }
       pLogger->shutDown();
+      delete pLogWriter;
    }
 }

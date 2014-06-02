@@ -13,12 +13,13 @@
 
 /*****************************************************************************\
  * logMngr:
- * This is the main interface of the logger, and the only one that the application 
- * should use.
+ * This is the main interface/entry point for the logger.
  *
- * Application should create instance of this class,
- * Call write(), in order to log messages,
- * and, finally, call shutDown, when the application terminated.
+ * It provides write(), in order to log messages,
+ * and, shutDown(), to gracefully shut down the logger
+ *
+ * Note:
+ * Application should use the macros provided in smartLogger.
  *
  * TODO: move the formatterWriter to be template argument
  * TODO: move all the characteristics to a new, traites cklass.

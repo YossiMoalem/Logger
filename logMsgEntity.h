@@ -72,6 +72,11 @@ class logMsgEntity
    resultStatus  write (logMsgFormatterWriter* i_logMsgFormatterWriter,
                         unsigned int i_expectedLifeID);
 
+   private:
+   /* Non Copyable */
+   logMsgEntity (const logMsgEntity&);
+   logMsgEntity& operator=(const logMsgEntity&);
+
    private :
 
    msgState 			m_state;

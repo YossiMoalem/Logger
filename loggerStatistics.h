@@ -109,6 +109,10 @@ class loggerStatistics
    private:
       loggerStatistics();
 
+      /* Non-Copyable */ 
+      loggerStatistics (const loggerStatistics&);
+      loggerStatistics& operator= (const loggerStatistics&);
+
    private:
       static loggerStatistics* s_instance;
 

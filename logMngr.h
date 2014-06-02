@@ -89,6 +89,10 @@ class logMngr
     *****************************************************************************/
    void writeError (const char* i_pErrorMessage);
 
+   /* Non-Copyable */ 
+   logMngr(const logMngr&);
+   logMngr operator= (const logMngr&);
+
    private:
 
    logMsgEntity                 m_msgs[NUM_OF_LOG_MSGS] ;

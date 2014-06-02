@@ -30,18 +30,23 @@
 
 class msgTokenMngr
 {
- 		public:
-        typedef unsigned long long msg_token_t ;       
-        
-        msgTokenMngr(unsigned int i_numOfMsgs): m_numOfMsgs(i_numOfMsgs),
-                                                m_curEntryIndent(CREATE_ENTRY_IDENT(1,0))
-   {}
-        
-        void getNextIndex (unsigned int &o_index,unsigned int& o_lifeID,msg_token_t &o_entryIdentifier); 
+   public:
+      typedef unsigned long long msg_token_t ;       
 
-      private:
-      unsigned int m_numOfMsgs;
-       msg_token_t         m_curEntryIndent;
+      msgTokenMngr(unsigned int i_numOfMsgs): m_numOfMsgs(i_numOfMsgs),
+      m_curEntryIndent(CREATE_ENTRY_IDENT(1,0))
+   {}
+
+      void getNextIndex (unsigned int &o_index,unsigned int& o_lifeID,msg_token_t &o_entryIdentifier); 
+
+   private:
+   /* Non-Copyable */ 
+   msgTokenMngr (const msgTokenMngr&);
+   msgTokenMngr& operator= (const msgTokenMngr&);
+
+   private:
+      unsigned int      m_numOfMsgs;
+      msg_token_t       m_curEntryIndent;
 };
 
 BOOST_STATIC_ASSERT ((sizeof(msgTokenMngr::msg_token_t ) >= 8));

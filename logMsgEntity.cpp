@@ -23,8 +23,6 @@
 
 	logMsgEntity::logMsgEntity() : m_state (MS_Unused),m_lifeID (0)
 	{
-		m_msgText[MAX_MSG_TEXT_SIZE] = 0;
-		m_funcName[MAX_FUNC_NAME_SIZE] = 0;
                 INIT_LOCK
 	}
 //==================================================================================================================================================
@@ -50,18 +48,18 @@
             }
             else
             {
-               strncpy (m_msgText, i_pNewMsg, MAX_MSG_TEXT_SIZE);
-               strncpy (m_funcName, i_pFuncName, MAX_FUNC_NAME_SIZE);
-               m_time = i_time;
-               m_tid = i_tid;
-               m_severity = i_severity;
+               strncpy (m_msgData.m_msgText, i_pNewMsg, MAX_MSG_TEXT_SIZE);
+               strncpy (m_msgData.m_funcName, i_pFuncName, MAX_FUNC_NAME_SIZE);
+               m_msgData.m_time = i_time;
+               m_msgData.m_tid = i_tid;
+               m_msgData.m_severity = i_severity;
                m_lifeID = i_lifeID;
                m_state = MS_Ready;
                if (true == i_writeStack)
                {
-                  Stackwalker::getStacktrace(STACK_SIZE,m_stack,1);                 
+                  Stackwalker::getStacktrace(STACK_SIZE,m_msgData.m_stack,1);                 
                } else {
-                  m_stack[0]= 0;
+                  m_msgData.m_stack[0]= 0;
                }
                retval = RS_Success;   
             } //else
@@ -103,25 +101,24 @@
       {
          case MS_Unused:
             //We never wrote here. Do nothing.
-            //i_logMsgFormatterWriter->write ("Massage is missing here ", "Unused", 0, -1, 0);
-			retval = RS_Success;
+            retval = RS_Success;
             break;
          case MS_InProgress:
             //TODO : do we really want this? if not also change if (m_state != MS_InProgress || m_state != MS_Flushed)
             //Notice, it cound be that "our" msg is being overwritten, and we have nothing to do now
             //BUT it coulld also be that our msg is just being written, so we should wait for it (?) ...
             m_state = MS_Flushed;
-            i_logMsgFormatterWriter->write ("Massage is missing here ", "Internal Logger Error", 0, -1, 0);
+            i_logMsgFormatterWriter->writeError ("Massage is missing herei: Internal Logger Error");
             retval =  RS_MsgBusy;
          case MS_Ready:
             m_state = MS_BeingFlushed;
-            if (0== m_stack[0])
+            if (0== m_msgData.m_stack[0])
             {
-               i_logMsgFormatterWriter->write (m_msgText, m_funcName, m_time, m_tid, m_severity);
+               i_logMsgFormatterWriter->write (m_msgData);
             }else {
                Stackwalker::stackFrameBuff stackSymbol[STACK_SIZE];
-               Stackwalker::stackSymbols(STACK_SIZE,m_stack,stackSymbol);
-               i_logMsgFormatterWriter->writeWithStack (m_msgText, m_funcName, m_time, m_tid, m_severity,stackSymbol,STACK_SIZE);
+               Stackwalker::stackSymbols(STACK_SIZE,m_msgData.m_stack,stackSymbol);
+               i_logMsgFormatterWriter->writeWithStack (m_msgData, stackSymbol, STACK_SIZE);
             }
             m_state = MS_Flushed;
             break;

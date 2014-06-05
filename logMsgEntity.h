@@ -8,13 +8,10 @@
 #include <assert.h> //for assert...
 #include <pthread.h>//for the mutex
 
+#include "msgData.h"
 #include "logMsgFormatterWriter.h"
-#include "stackwalker.h"
 
 
-#define MAX_MSG_TEXT_SIZE  200
-#define MAX_FUNC_NAME_SIZE 100
-#define STACK_SIZE 5
 
 /******************************************************************************\
  * logMsgEntity:
@@ -78,15 +75,10 @@ class logMsgEntity
    logMsgEntity& operator=(const logMsgEntity&);
 
    private :
-
-   msgState 			m_state;
-   char 				m_msgText [ MAX_MSG_TEXT_SIZE+ 1 ];
-   char 				m_funcName [ MAX_FUNC_NAME_SIZE + 1 ];
-   time_t 				m_time;
-   pid_t				m_tid;
-   int 				m_severity;
-   unsigned int        m_lifeID;
-   Stackwalker::stackFrameAddr m_stack[STACK_SIZE];
+   msgData              m_msgData;
+   msgState 		m_state;
+   unsigned int         m_lifeID;
+   
 
 #ifndef NOLOCK
    pthread_mutex_t     m_lock;

@@ -41,7 +41,6 @@ int logMngr::write (const char *const  i_pMsgText, const char *const  i_pFuncNam
       this->m_flushTokenMngr.addToken(entryIdentifier);
    }
 
-
 #if DEBUG >= 1
    PRINT_DEBUG(entryIdentifier
          << "|Severity: " <<i_severity 

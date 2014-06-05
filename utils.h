@@ -4,10 +4,15 @@
 #include <iostream>
 #include <sstream>
 
-#define PRINT_DEBUG(MSG) do{\
+#ifndef DEBUG
+#define DEBUG 0
+#endif
+
+#define PRINT_DEBUG(SEVERITY, MSG) do{\
+if(SEVERITY <= DEBUG) {\
 std::stringstream ss;\
 ss<< MSG <<std::endl;\
-std::cerr << ss.str();\
+std::cerr << ss.str();}\
 }while(0);
 
 

@@ -3,9 +3,6 @@
 
 #include <sys/types.h>  // for pid_t
 #include <time.h> //for time_t
-#include <string.h>//for strncpy
-#include <stdio.h> //for sprintf
-#include <assert.h> //for assert...
 #include <pthread.h>//for the mutex
 
 #include "msgData.h"
@@ -16,7 +13,7 @@
 /******************************************************************************\
  * logMsgEntity:
  * This is the basic "building block" of the logger.
- * It holds all the log msg data, and some metadata, for a single message. 
+ * It holds the log msg data, and some metadata, for a single message. 
  * The main two methods here are set(), to record a new message, and write, 
  * to flush a message().
  *
@@ -70,6 +67,10 @@ class logMsgEntity
                         unsigned int i_expectedLifeID);
 
    private:
+   /* This must NOT be public. Usage of this function requires LOCKing the cell!! 
+    * It is only here to enforce constness */
+   const msgData& getMsgData () { return m_msgData;}
+
    /* Non Copyable */
    logMsgEntity (const logMsgEntity&);
    logMsgEntity& operator=(const logMsgEntity&);

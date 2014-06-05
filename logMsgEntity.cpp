@@ -1,5 +1,6 @@
 #include "logMsgEntity.h"
 #include "loggerStatistics.h"
+#include <string.h>//for strncpy
 
 #ifndef NOLOCK
   #define LOCK_BEFORE_SET           pthread_mutex_lock(&m_lock);
@@ -114,11 +115,11 @@
             m_state = MS_BeingFlushed;
             if (0== m_msgData.m_stack[0])
             {
-               i_logMsgFormatterWriter->write (m_msgData);
+               i_logMsgFormatterWriter->write (getMsgData());
             }else {
                Stackwalker::stackFrameBuff stackSymbol[STACK_SIZE];
                Stackwalker::stackSymbols(STACK_SIZE,m_msgData.m_stack,stackSymbol);
-               i_logMsgFormatterWriter->writeWithStack (m_msgData, stackSymbol, STACK_SIZE);
+               i_logMsgFormatterWriter->writeWithStack (getMsgData(), stackSymbol, STACK_SIZE);
             }
             m_state = MS_Flushed;
             break;

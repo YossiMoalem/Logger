@@ -29,9 +29,7 @@ void FlushTokens::addToken(msgTokenMngr::msg_token_t i_newToken)
 {
    pthread_mutex_lock(&m_startIndexMutex);
 
-#if DEBUG >= 2
-   PRINT_DEBUG ("Calling flush for identifier "<< i_newToken);
-#endif
+   PRINT_DEBUG (2, "Calling flush for identifier "<< i_newToken);
 
    m_queueFlushStartIndex.push(i_newToken);
    pthread_mutex_unlock(&m_startIndexMutex);
@@ -45,11 +43,6 @@ msgTokenMngr::msg_token_t  FlushTokens::getToken ()
    m_queueFlushStartIndex.pop();
 
    pthread_mutex_unlock(&m_startIndexMutex);
-#if DEBUG >= 2
-         PRINT_DEBUG ("Popped identifier " <<entryIdentifier
-               <<"(Index : " <<startIndex 
-               <<"LifeID : " <<startLifeID <<")");
-#endif
    return entryIdentifier;
 }
 

@@ -41,14 +41,12 @@ int logMngr::write (const char *const  i_pMsgText, const char *const  i_pFuncNam
       this->m_flushTokenMngr.addToken(entryIdentifier);
    }
 
-#if DEBUG >= 1
-   PRINT_DEBUG(entryIdentifier
+   PRINT_DEBUG(1, entryIdentifier
          << "|Severity: " <<i_severity 
          << " Time:  "     <<i_time 
          << " ThreadID: "   <<i_tid 
          << " FuncName: "   << i_pFuncName 
          << " Message: "   <<i_pMsgText);
-#endif 
    logMsgEntity::resultStatus res = logMsgEntity::RS_Unset;
    do {
       res = m_msgs[curIndex].set(i_pMsgText,i_pFuncName,i_time,i_tid,i_severity,curLifeID,i_writeStack);
@@ -73,9 +71,7 @@ void logMngr::writeError (const char* i_pErrorMessage)
 //==================================================================================================================================================
 void logMngr::shutDown()
 {
-#if DEBUG >= 2
-   PRINT_DEBUG ("******Calling shutDown *******");
-#endif
+   PRINT_DEBUG (2, "******Calling shutDown *******");
 
    m_flushTokenMngr.addToken(SHUTDOWN_ENTRY);
 

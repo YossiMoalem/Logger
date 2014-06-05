@@ -24,9 +24,7 @@ void *  outputHandler::startOutputWriterThread(void *i_logMngr)
 
          if (IS_SHUTDOWN_IDENT(entryIdentifier))
          {
-#if DEBUG >= 2
-         PRINT_DEBUG ("Popped Shutdown Msg");
-#endif
+            PRINT_DEBUG (2, "Popped Shutdown Msg");
             shouldContinue = false;
             break;
          }
@@ -34,6 +32,10 @@ void *  outputHandler::startOutputWriterThread(void *i_logMngr)
          unsigned int startIndex = GET_CUR_INDEX(entryIdentifier);
          unsigned int startLifeID = GET_CUR_LIFE_ID(entryIdentifier);
          unsigned int expectedLifeID = startLifeID;
+
+         PRINT_DEBUG (2, "Popped identifier " <<entryIdentifier
+               <<"(Index : " <<startIndex 
+               <<"LifeID : " <<startLifeID <<")");
 
 
          int curIndex =  startIndex - NUM_OF_RECORDS_TO_FLUSH + 1;
@@ -64,30 +66,23 @@ void *  outputHandler::startOutputWriterThread(void *i_logMngr)
                {
                   sched_yield();
 #if DEBUG >= 7 || defined STATISTICS
-
                   ++ cpuYieldCounter; 
                   cpuYieldCounter %= 1024;
                   if (cpuYieldCounter == 0)
                   {
                      loggerStatistics::instance()->inc_counter(loggerStatistics::outputWritter_CpuYield);
-#if DEBUG >= 7
-                     PRINT_DEBUG ("CPU yield 1024 times for expected LID " << expectedLifeID 
-                           <<" Got LID: " <<pLogMngr->m_msgs[curIndex].getLifeID() 
+                     PRINT_DEBUG (7, "CPU yield 1024 times for expected LID " << expectedLifeID 
                            <<" Index = " << curIndex 
                            <<" Expected Token:" << CREATE_ENTRY_IDENT(expectedLifeID, curIndex))
                   }
-#endif   // DEBUG >= 7          
 #endif   //DEBUG >= 7 || defined STATISTICS                  
-               } //retval == logMsgEntity::RS_MsgNotYetWriten
+               } //logMsgEntity::RS_MsgNotYetWriten
                if (retval == logMsgEntity::RS_MsgOverWritten)
                {
                   loggerStatistics::instance()->inc_counter(loggerStatistics::outputWritter_overwrittenMsgs);
                   pLogMngr->writeError("the entry was overwritten during the flush");
-#if DEBUG >= 4
-                  PRINT_DEBUG("Message index " <<curIndex<<" was overwritten during flash."
-                        <<"Expected LID = " <<expectedLifeID 
-                        <<" got LID : " << pLogMngr->m_msgs[curIndex].getLifeID());
-#endif
+                  PRINT_DEBUG(4, "Message index " <<curIndex<<" was overwritten during flash."
+                        <<"Expected LID = " <<expectedLifeID );
                }
 
             } while(retval == logMsgEntity::RS_MsgNotYetWriten);

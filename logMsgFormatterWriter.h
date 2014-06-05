@@ -35,6 +35,7 @@ class fileLogFormatterWritter : public logMsgFormatterWriter
       {
          write (i_msgData);
          fprintf(m_outputFile, "at:"); 
+
          //TODO: maybe skip trailing null frames?
          for (int i=0; i<i_stackSize; ++i)
          {

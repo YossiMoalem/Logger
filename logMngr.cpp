@@ -10,7 +10,7 @@ logMngr::logMngr (int i_flushSeverity,  logMsgFormatterWriter* i_pLogMsgFormatte
    m_pLogMsgFormatterWriter(i_pLogMsgFormatterWriter),
    m_msgTokenMngr(NUM_OF_LOG_MSGS)
 {
-   loggerStatistics::create();
+   loggerStatistics::instance(); //Just in order to create the statistics mngr....
 
 
    sem_init (&m_shutDownSem, 0, 1);
@@ -38,7 +38,7 @@ int logMngr::write (const char *const  i_pMsgText, const char *const  i_pFuncNam
 
    if (i_severity >= m_flushSeverity)
    {
-      this->m_flushTokenMngr.addToken(entryIdentifier);
+      this->m_flushTokenHolder.addToken(entryIdentifier);
    }
 
    PRINT_DEBUG(1, entryIdentifier
@@ -73,7 +73,7 @@ void logMngr::shutDown()
 {
    PRINT_DEBUG (2, "******Calling shutDown *******");
 
-   m_flushTokenMngr.addToken(SHUTDOWN_ENTRY);
+   m_flushTokenHolder.addToken(SHUTDOWN_ENTRY);
 
    //Wait for the writer to finish.
    sem_wait(&m_shutDownSem);

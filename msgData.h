@@ -7,6 +7,11 @@
 #define MAX_FUNC_NAME_SIZE 100
 #define STACK_SIZE 5
 
+/******************************************************************************\
+ * This class simply holds the message data as recieved from the application
+ * and, stackTrace, if requesed.
+ * Other than this, it holds no metadata.
+ ******************************************************************************/
 struct msgData
 {
    public:

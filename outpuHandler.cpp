@@ -12,15 +12,15 @@ outputHandler::outputHandler()
 
 void *  outputHandler::startOutputWriterThread(void *i_logMngr)
 {
-   bool             shouldContinue  = true;
-   logMngr*         pLogMngr        = static_cast <logMngr*> (i_logMngr);
-   FlushTokens&     flushTokenMngr  = pLogMngr->getFlusTokenMngr();
+   bool                 shouldContinue  = true;
+   logMngr*             pLogMngr        = static_cast <logMngr*> (i_logMngr);
+   FlushTokensHolder&   flushTokenHolder= pLogMngr->getFlusTokenMngr();
    while (true == shouldContinue)
    {
       // TODO change the busy loop on the empty queue condition
-      while (!flushTokenMngr.isEmpty())
+      while (!flushTokenHolder.isEmpty())
       {
-         msgTokenMngr::msg_token_t  entryIdentifier = flushTokenMngr.getToken();
+         msgTokenMngr::msg_token_t  entryIdentifier = flushTokenHolder.getToken();
 
          if (IS_SHUTDOWN_IDENT(entryIdentifier))
          {

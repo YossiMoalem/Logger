@@ -22,7 +22,7 @@
  * Application should use the macros provided in smartLogger.
  *
  * TODO: move the formatterWriter to be template argument
- * TODO: move all the characteristics to a new, traites cklass.
+ * TODO: move all the characteristics to a new, traites class.
  *****************************************************************************/
 
 class logMngr
@@ -48,8 +48,6 @@ class logMngr
     * Otherwise, this will only record the message.
     *
     * If i_writeStack is true, stack will be added to this message.
-    *
-    * TODO: Can remove TID, and get it automaticvally??
     *****************************************************************************/
    int write (const char *const     i_pMsgText, 
          const char*const  i_pfuncName, 
@@ -70,11 +68,11 @@ class logMngr
 
    /*****************************************************************************\
     * getFlusTokenMngr:
-    * Returns the FlushTokens Manager, so the writer can pop tokens to flush.
+    * Returns the FlushTokensHolder, so the writer can pop tokens to flush.
     *****************************************************************************/
-   FlushTokens& getFlusTokenMngr ()
+   FlushTokensHolder& getFlusTokenMngr ()
    {
-      return m_flushTokenMngr;
+      return m_flushTokenHolder;
    }
 
    private:     
@@ -100,7 +98,7 @@ class logMngr
    int 		                m_flushSeverity;
    logMsgFormatterWriter*       m_pLogMsgFormatterWriter;
    msgTokenMngr                 m_msgTokenMngr;
-   FlushTokens                  m_flushTokenMngr;
+   FlushTokensHolder            m_flushTokenHolder;
 
    sem_t                        m_shutDownSem;
 };

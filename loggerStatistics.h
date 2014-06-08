@@ -15,12 +15,13 @@
  *  Call inc_counter() and dec_counter() with the new counter, as needed.
  *
  * TODO:
- *  Remove the create() hack. See bellow...
  *  Think about the counter data type.
  ******************************************************************************/
 
 #include <stdint.h>
-#include "assert.h"
+#include <pthread.h>
+#include <assert.h>
+
 #include "utils.h"
 
 #ifdef STATISTICS
@@ -38,31 +39,7 @@
 class loggerStatistics
 {
    public:
-      /******************************************************************************\
-       * Get instance of the statistics manager.
-       ******************************************************************************/
-      static loggerStatistics* instance()
-      {
-         if (s_instance == NULL)
-            assert (0);
-         return s_instance;
-      }
-
-      /******************************************************************************\
-       * Create and initilize the statistics manager.
-       * The reason this is not done in the instance() method, is to avoid locking
-       * As instance() can be called from several thread, TS have to be implemented.
-       * in order to avoid this, main thread should call the create(), and only than, 
-       * instance can be called.
-       * Thinking about it, this is quite an ugly hack and should be removed...
-       ******************************************************************************/
-      static void create()
-      {
-         if (s_instance == NULL)
-            s_instance = new loggerStatistics;
-         else
-            assert (0);
-      }
+      static loggerStatistics* instance();
 
       /******************************************************************************\
        * Defines all the mesurements.
@@ -115,6 +92,7 @@ class loggerStatistics
 
    private:
       static loggerStatistics* s_instance;
+      static pthread_mutex_t   m_creationLock;
 
       /******************************************************************************\
        * Holds all the counter values

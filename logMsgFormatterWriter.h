@@ -9,7 +9,9 @@ class logMsgFormatterWriter
 {
    public:
       virtual void write (const msgData& i_msgData) = 0;
-      virtual void writeWithStack (const msgData& i_msgData, const char i_stack[][STACK_FRAME_BUF_SIZE], int i_stackSize) = 0;
+      virtual void writeWithStack (const msgData& i_msgData, 
+                                    const char i_stack[][STACK_FRAME_BUF_SIZE], 
+                                    int i_stackSize) = 0;
       virtual void startBlock ()=0;
       virtual void writeError (const char* i_pErrorMessage)=0;
 };
@@ -31,7 +33,9 @@ class fileLogFormatterWritter : public logMsgFormatterWriter
             i_msgData.m_msgText);
       }
 
-      virtual void writeWithStack (const msgData& i_msgData, const char i_stack[][STACK_FRAME_BUF_SIZE], int i_stackSize)
+      virtual void writeWithStack (const msgData& i_msgData, 
+                                    const char i_stack[][STACK_FRAME_BUF_SIZE], 
+                                    int i_stackSize)
       {
          write (i_msgData);
          fprintf(m_outputFile, "at:"); 

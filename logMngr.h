@@ -40,12 +40,11 @@ class logMngr
    public:
 
    /*****************************************************************************\
-    * Create a new logMngr inst.
-    * i_flushSeverity: messages with severity higher or equal to this severity, 
-    *       will initiate flush.
+    * Create a new logMngr inst.  i_flushSeverity: messages with severity
+    * higher or equal to this severity, will initiate flush.
     *****************************************************************************/
-   logMngr (int i_flushSeverity);
-   ~logMngr ()
+    logMngr (int i_flushSeverity); 
+    ~logMngr ();
 
    /*****************************************************************************\
     * Log a new message.

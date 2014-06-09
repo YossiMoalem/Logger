@@ -9,3 +9,5 @@ Features:
 
 line numbers in stackwalker. (No idea how to do this, in reasenable time...)
 filter should be extracted, and put as policy
+
+In logMsgEntity, move all the help classes out, so we will have shorter names...)

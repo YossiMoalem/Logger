@@ -19,11 +19,22 @@ logMngr<Writer>::logMngr(int i_flushSeverity) :
    pthread_t                   outputWriterThread;
    pthread_attr_t attr;
    
-   //TODO check retval
    int s = pthread_attr_init(&attr);
-   s = pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+   if (s != 0)
+   {
+      m_pWriter->write_error ("Error while trying to set writer thread attribute. Logger will be disabled!");
+   }
+   else
+   {
+      s = pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+      if (s != 0)
+      {
+         m_pWriter->write_error("Error while trying to set thread as detachable. Logger will be disabled");
+      } else {
+         pthread_create(&outputWriterThread,&attr,&outputHandler<Writer>::startOutputWriterThread,this);
+      }
+   }
 
-   pthread_create(&outputWriterThread,&attr,&outputHandler<Writer>::startOutputWriterThread,this);
 }
 
 //=============================================================================

@@ -3,7 +3,7 @@
 
 #include "logMsgEntity.h"
 #include "msgTokenMngr.h"
-#include "flushTokens.h"
+#include "flushTokensHolder.h"
 
 #include <pthread.h> 
 #include <semaphore.h>
@@ -24,6 +24,7 @@
  * TODO: move the formatterWriter to be template argument
  * TODO: move all the characteristics to a new, traites class.
  *****************************************************************************/
+
 
 class logMngr
 {
@@ -96,7 +97,6 @@ class logMngr
 
    logMsgEntity                 m_msgs[NUM_OF_LOG_MSGS] ;
    int 		                m_flushSeverity;
-   logMsgFormatterWriter*       m_pLogMsgFormatterWriter;
    msgTokenMngr                 m_msgTokenMngr;
    FlushTokensHolder            m_flushTokenHolder;
 

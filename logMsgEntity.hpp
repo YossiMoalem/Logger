@@ -1,3 +1,4 @@
+
 #include "logMsgEntity.h"
 #include "loggerStatistics.h"
 #include <string.h>//for strncpy
@@ -22,12 +23,20 @@
 #endif
 
 
-	logMsgEntity::logMsgEntity() : m_state (MS_Unused),m_lifeID (0)
-	{
-                INIT_LOCK
-	}
-//==================================================================================================================================================
-   logMsgEntity::resultStatus  logMsgEntity::set (const char* i_pNewMsg, const char* i_pFuncName, time_t i_time, pid_t i_tid, int i_severity,unsigned int i_lifeID,bool i_writeStack)
+template <class Writer>
+logMsgEntity<Writer>::logMsgEntity() : m_state (MS_Unused),m_lifeID (0)
+{
+   INIT_LOCK
+}
+//==============================================================================
+template <class Writer>
+typename logMsgEntity<Writer>::resultStatus  logMsgEntity<Writer>::set (const char* i_pNewMsg, 
+      const char*   i_pFuncName, 
+      time_t        i_time, 
+      pid_t         i_tid, 
+      int           i_severity,
+      unsigned int  i_lifeID,
+      bool          i_writeStack)
 {
 
    resultStatus retval = RS_Unset;
@@ -82,8 +91,10 @@
    return retval;
 }
 
-//==================================================================================================================================================
-	logMsgEntity::resultStatus logMsgEntity::write (logMsgFormatterWriter* i_logMsgFormatterWriter,unsigned int i_expectedLifeID )
+//=============================================================================
+template <class Writer>
+typename logMsgEntity<Writer>::resultStatus logMsgEntity<Writer>::write (Writer* i_logMsgFormatterWriter,
+      unsigned int i_expectedLifeID )
 {
 
    resultStatus retval = RS_Unset;

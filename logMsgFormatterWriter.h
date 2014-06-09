@@ -5,37 +5,50 @@
 
 #include <stdio.h>
 
+/******************************************************************************\
+ * This class defines the minimal intf thats needed to be implemented by any writer
+ * Those are teh functions that the logger will call.
+ * Other functions (e.g. init() ) can be added.
+ * Those function can be called using the logMngr getWriter() method
+ ******************************************************************************/
 class logMsgFormatterWriter
 {
    public:
-      virtual void write (const msgData& i_msgData) = 0;
-      virtual void writeWithStack (const msgData& i_msgData, 
-                                    const char i_stack[][STACK_FRAME_BUF_SIZE], 
-                                    int i_stackSize) = 0;
-      virtual void startBlock ()=0;
-      virtual void writeError (const char* i_pErrorMessage)=0;
+      void write (const msgData& i_msgData);
+      void writeWithStack (const msgData& i_msgData, 
+                            const char i_stack[][STACK_FRAME_BUF_SIZE], 
+                            int i_stackSize);
+      void startBlock ();
+      void writeError (const char* i_pErrorMessage);
 };
 
+/******************************************************************************\
+ * Simple writter that writes the lof to file-descriptor.
+ ******************************************************************************/
 class fileLogFormatterWritter : public logMsgFormatterWriter
 {
-
    public:
-      fileLogFormatterWritter (FILE* i_outputFile) : m_outputFile(i_outputFile)
-   {}
+      fileLogFormatterWritter () : m_outputFile(stdout)
+      {}
 
-      virtual  void write (const msgData& i_msgData)
-      {
-         fprintf(m_outputFile, "Severity %d: Time %ld: ThreadID %u: FuncName %s: Message %s\n",
-            i_msgData.m_severity, 
-            i_msgData.m_time, 
-            i_msgData.m_tid, 
-            i_msgData.m_funcName, 
-            i_msgData.m_msgText);
+      void setFd (FILE* i_outputFile)
+      { 
+         m_outputFile = i_outputFile;
       }
 
-      virtual void writeWithStack (const msgData& i_msgData, 
-                                    const char i_stack[][STACK_FRAME_BUF_SIZE], 
-                                    int i_stackSize)
+      void write (const msgData& i_msgData)
+      {
+         fprintf(m_outputFile, "Severity %d: Time %ld: ThreadID %u: FuncName %s: Message %s\n",
+               i_msgData.m_severity, 
+               i_msgData.m_time, 
+               i_msgData.m_tid, 
+               i_msgData.m_funcName, 
+               i_msgData.m_msgText);
+      }
+
+      void writeWithStack (const msgData& i_msgData, 
+            const char i_stack[][STACK_FRAME_BUF_SIZE], 
+            int i_stackSize)
       {
          write (i_msgData);
          fprintf(m_outputFile, "at:"); 
@@ -47,17 +60,17 @@ class fileLogFormatterWritter : public logMsgFormatterWriter
          }
       }
 
-      virtual void startBlock ()
+      void startBlock ()
       {
          fprintf(m_outputFile, "*************************************************\n");
       }
 
-      virtual void writeError (const char* i_pErrorMessage)
+      void writeError (const char* i_pErrorMessage)
       {
          fprintf(m_outputFile, "%s\n",i_pErrorMessage);
       }
 
-      virtual ~fileLogFormatterWritter(){}
+      ~fileLogFormatterWritter(){}
    private:
       FILE* m_outputFile;
 };

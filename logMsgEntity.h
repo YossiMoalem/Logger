@@ -19,6 +19,7 @@
  *
  ******************************************************************************/
 
+template <class Writer>
 class logMsgEntity
 {
    /******************************************************************************\
@@ -63,7 +64,7 @@ class logMsgEntity
    /******************************************************************************\
     * Flush the current log message.
     ******************************************************************************/
-   resultStatus  write (logMsgFormatterWriter* i_logMsgFormatterWriter,
+   resultStatus  write (Writer* i_logMsgFormatterWriter,
                         unsigned int i_expectedLifeID);
 
    private:
@@ -85,5 +86,5 @@ class logMsgEntity
    pthread_mutex_t     m_lock;
 #endif    
 };
-
+#include "logMsgEntity.hpp"
 #endif

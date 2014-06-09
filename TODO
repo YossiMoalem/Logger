@@ -3,9 +3,9 @@ Change the bussy loop in output handlet to cond. var.
 
 Improve:
 typedefs for LID, Index
+decrease coupling between logMngr to outputHandler
 
 Features:
 
 line numbers in stackwalker. (No idea how to do this, in reasenable time...)
 filter should be extracted, and put as policy
-writer -> to template

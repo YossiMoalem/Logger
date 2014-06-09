@@ -5,15 +5,18 @@
 #include "msgTokenMngr.h"
 #include "flushTokensHolder.h"
 
-#include <pthread.h> 
+
 #include <semaphore.h>
 
 #define NUM_OF_RECORDS_TO_FLUSH 20 
 #define NUM_OF_LOG_MSGS  (NUM_OF_RECORDS_TO_FLUSH*10)
 
+//static_assert (NUM_OF_LOG_MSGS<0xFFFFFFFF);
 /*****************************************************************************\
  * logMngr:
  * This is the main interface/entry point for the logger.
+ * Template Param Writer is the class that will do the actual printing.
+ * Please look at logMsgFormatterWriter.h for the intf. description
  *
  * It provides write(), in order to log messages,
  * and, shutDown(), to gracefully shut down the logger
@@ -21,15 +24,18 @@
  * Note:
  * Application should use the macros provided in smartLogger.
  *
- * TODO: move the formatterWriter to be template argument
  * TODO: move all the characteristics to a new, traites class.
+ * TODO: move the filter fo be policy
  *****************************************************************************/
 
+template <class Writer>
+class outputHandler;
 
+template <class Writer>
 class logMngr
 {
    //The outputHandler should access the logMessages
-   friend class outputHandler;
+   friend class outputHandler<Writer>;
 
    public:
 
@@ -37,10 +43,9 @@ class logMngr
     * Create a new logMngr inst.
     * i_flushSeverity: messages with severity higher or equal to this severity, 
     *       will initiate flush.
-    * i_pLogMsgFormatterWriter: the class that will do the actual writing.
     *****************************************************************************/
-   logMngr (int i_flushSeverity,  
-         logMsgFormatterWriter* i_pLogMsgFormatterWriter );
+   logMngr (int i_flushSeverity);
+   ~logMngr ()
 
    /*****************************************************************************\
     * Log a new message.
@@ -66,14 +71,13 @@ class logMngr
     *****************************************************************************/
    void shutDown ();
 
-
    /*****************************************************************************\
-    * getFlusTokenMngr:
-    * Returns the FlushTokensHolder, so the writer can pop tokens to flush.
+    * getWritter
+    * Returns the writter, so application can call writter specific methods (e.g. init())
     *****************************************************************************/
-   FlushTokensHolder& getFlusTokenMngr ()
+   Writer* getWritter ()
    {
-      return m_flushTokenHolder;
+      return m_pWriter;
    }
 
    private:     
@@ -84,23 +88,29 @@ class logMngr
     *****************************************************************************/
    void startBlock();
 
-   /*****************************************************************************\
-    * In case of logger error - log it.
-    *****************************************************************************/
-   void writeError (const char* i_pErrorMessage);
 
+   /*****************************************************************************\
+    * getFlusTokenMngr:
+    * Returns the FlushTokensHolder, so the writer can pop tokens to flush.
+    *****************************************************************************/
+   FlushTokensHolder& getFlusTokenMngr ()
+   {
+      return m_flushTokenHolder;
+   }
    /* Non-Copyable */ 
    logMngr(const logMngr&);
    logMngr operator= (const logMngr&);
 
+
    private:
 
-   logMsgEntity                 m_msgs[NUM_OF_LOG_MSGS] ;
+   logMsgEntity<Writer>         m_msgs[NUM_OF_LOG_MSGS] ;
+   Writer*                      m_pWriter;
    int 		                m_flushSeverity;
    msgTokenMngr                 m_msgTokenMngr;
    FlushTokensHolder            m_flushTokenHolder;
-
    sem_t                        m_shutDownSem;
 };
 
- #endif
+#include "logMngr.hpp"
+#endif

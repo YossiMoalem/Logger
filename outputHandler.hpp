@@ -5,15 +5,12 @@
 #include "utils.h"
 #include <sched.h>
 
-outputHandler::outputHandler()
-{
-}
 
-
-void *  outputHandler::startOutputWriterThread(void *i_logMngr)
+template <class Writer>
+void* outputHandler<Writer>::startOutputWriterThread(void *i_logMngr)
 {
    bool                 shouldContinue  = true;
-   logMngr*             pLogMngr        = static_cast <logMngr*> (i_logMngr);
+   logMngr<Writer>*     pLogMngr        = static_cast <logMngr<Writer>*> (i_logMngr);
    FlushTokensHolder&   flushTokenHolder= pLogMngr->getFlusTokenMngr();
    while (true == shouldContinue)
    {
@@ -52,17 +49,17 @@ void *  outputHandler::startOutputWriterThread(void *i_logMngr)
                --expectedLifeID;
             }
          }
-         pLogMngr->startBlock();
+         pLogMngr->getWritter()->startBlock();
          bool shouldContinue = true;
          bool lastPrinted = false;
 
          while (true == shouldContinue)
          {
             int cpuYieldCounter = 0;
-            logMsgEntity::resultStatus retval = logMsgEntity::RS_Success;
+            typename logMsgEntity<Writer>::resultStatus retval = logMsgEntity<Writer>::RS_Success;
             do {
-               retval = pLogMngr->m_msgs[curIndex].write(pLogMngr->m_pLogMsgFormatterWriter,expectedLifeID);
-               if (retval == logMsgEntity::RS_MsgNotYetWriten)
+               retval = pLogMngr->m_msgs[curIndex].write(pLogMngr->getWritter(),expectedLifeID);
+               if (retval == logMsgEntity<Writer>::RS_MsgNotYetWriten)
                {
                   sched_yield();
 #if DEBUG >= 7 || defined STATISTICS
@@ -77,15 +74,15 @@ void *  outputHandler::startOutputWriterThread(void *i_logMngr)
                   }
 #endif   //DEBUG >= 7 || defined STATISTICS                  
                } //logMsgEntity::RS_MsgNotYetWriten
-               if (retval == logMsgEntity::RS_MsgOverWritten)
+               if (retval == logMsgEntity<Writer>::RS_MsgOverWritten)
                {
                   loggerStatistics::instance()->inc_counter(loggerStatistics::outputWritter_overwrittenMsgs);
-                  pLogMngr->writeError("the entry was overwritten during the flush");
+                  pLogMngr->getWritter()->writeError("the entry was overwritten during the flush");
                   PRINT_DEBUG(4, "Message index " <<curIndex<<" was overwritten during flash."
                         <<"Expected LID = " <<expectedLifeID );
                }
 
-            } while(retval == logMsgEntity::RS_MsgNotYetWriten);
+            } while(retval == logMsgEntity<Writer>::RS_MsgNotYetWriten);
 
 
             ++curIndex;

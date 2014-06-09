@@ -11,11 +11,12 @@
  *
  * It runs on a dedicated thread, created by the logMngr
  ******************************************************************************/
+template <class Writer>
 class outputHandler
 {
    public:
-      outputHandler();
-      ~outputHandler();
+      outputHandler()
+      {}
 
       /* Entry point for the created thread */
       static void * startOutputWriterThread (void * i_logMngr);
@@ -25,6 +26,8 @@ class outputHandler
       outputHandler (const outputHandler&);
       outputHandler& operator= (const outputHandler&);
 };
+
+#include "outputHandler.hpp"
 
 #endif 
 

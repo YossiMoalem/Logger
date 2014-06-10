@@ -71,31 +71,16 @@ class logMngr
    void shutDown ();
 
    /*****************************************************************************\
-    * getWritter
+    * getWriter
     * Returns the writter, so application can call writter specific methods (e.g. init())
     *****************************************************************************/
-   Writer* getWritter ()
+   Writer* getWriter ()
    {
-      return m_pWriter;
+      return m_outputHandler->getWriter();
    }
 
    private:     
 
-   /*****************************************************************************\
-    * write a block seperator 
-    * (block is a set of flushed messages)
-    *****************************************************************************/
-   void startBlock();
-
-
-   /*****************************************************************************\
-    * getFlusTokenMngr:
-    * Returns the FlushTokensHolder, so the writer can pop tokens to flush.
-    *****************************************************************************/
-   FlushTokensHolder& getFlusTokenMngr ()
-   {
-      return m_flushTokenHolder;
-   }
    /* Non-Copyable */ 
    logMngr(const logMngr&);
    logMngr operator= (const logMngr&);
@@ -104,11 +89,10 @@ class logMngr
    private:
 
    logMsgEntity<Writer>         m_msgs[NUM_OF_LOG_MSGS] ;
-   Writer*                      m_pWriter;
    int 		                m_flushSeverity;
    msgTokenMngr                 m_msgTokenMngr;
    FlushTokensHolder            m_flushTokenHolder;
-   sem_t                        m_shutDownSem;
+   outputHandler<Writer>*       m_outputHandler;
 };
 
 #include "logMngr.hpp"

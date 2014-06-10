@@ -39,7 +39,7 @@ class logMsgEntity
    {
       RS_Unset 		   = 0, //Status was not set...
       RS_Success           = 1, //Opperation completed successfully
-      RS_MsgOverWritten    = 2, //Msg has been overwritten already
+      RS_MsgOverwritten    = 2, //Msg has been overwritten already
       RS_MsgNotYetWriten   = 3, //the required message was not written yet
       RS_MsgBusy           = 4, //The msg is in process not (either, being set or being flushed)
       RS_InternalError     = 5, //Internal error...

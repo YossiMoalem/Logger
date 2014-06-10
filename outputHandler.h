@@ -6,7 +6,7 @@
  * This class is responsible for poping flash token from the flushTokenHolder
  * and flushing the required number of messages from this index backwords.
  *
- * It loops untill it gets shutdown message, and everytime there is 
+ * It loops untill it gets shutdown token, and everytime there is 
  * a flush token available - it ftart the flushing.
  *
  * It runs on a dedicated thread, created by the logMngr
@@ -15,16 +15,50 @@ template <class Writer>
 class outputHandler
 {
    public:
-      outputHandler()
+      outputHandler( logMsgEntity<Writer> (&i_msgs)[NUM_OF_LOG_MSGS],
+                     FlushTokensHolder&   i_flushTokenHolder):
+                  m_msgs(i_msgs),
+                  m_flushTokenHolder(i_flushTokenHolder),
+                  m_pWriter(new Writer)
       {}
 
       /* Entry point for the created thread */
       static void * startOutputWriterThread (void * i_logMngr);
 
+      /************************************************************************\
+       * It is possible that we still  have messages to flush, even when the 
+       * application terminates.
+       * This function should be called prior to terminating the app.
+       * It will block untill all messages are flused.
+       ************************************************************************/
+      void waitForOutputToComplete ();
+
+      ~outputHandler()
+      {
+         delete (m_pWriter); 
+         m_pWriter = 0;
+      }
+
+   /*****************************************************************************\
+    * getWriter
+    * Returns the writter, so application can call writter specific methods (e.g. init())
+    *****************************************************************************/
+   Writer* getWriter ()
+   {
+      return m_pWriter;
+   }
    private:
+      void startMainLoop ();
+
       /* Non-Copyable */ 
       outputHandler (const outputHandler&);
       outputHandler& operator= (const outputHandler&);
+
+   private:
+      logMsgEntity<Writer>  (&m_msgs)[NUM_OF_LOG_MSGS] ;
+      FlushTokensHolder&    m_flushTokenHolder;
+      sem_t                 m_shutDownSem;
+      Writer*               m_pWriter;
 };
 
 #include "outputHandler.hpp"

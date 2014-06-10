@@ -9,7 +9,7 @@
 #include "smartLogger.h"
 #include "logMsgFormatterWriter.h"
 
-typedef  logMngr<fileLogFormatterWritter> simpleLogMngr ;
+typedef  logMngr<fileLogFormatterWriter> simpleLogMngr ;
 
 
 
@@ -76,8 +76,8 @@ int main (int argc, char* argv[])
          <<flushMessagesPrecent <<" percent of them will require flush \n";
          */
       // init logger
-      simpleLogMngr* pLogger = GET_LOGGER(100 - flushMessagesPrecent, fileLogFormatterWritter); 
-      pLogger->getWritter()->setFd (stdout);
+      simpleLogMngr* pLogger = GET_LOGGER(100 - flushMessagesPrecent, fileLogFormatterWriter); 
+      pLogger->getWriter()->setFd (stdout);
 
       const int lastfMsgIndex = sizeof(messages)/sizeof (char*)-1;
 

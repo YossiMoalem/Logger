@@ -101,7 +101,7 @@ typename logMsgEntity<Writer>::resultStatus logMsgEntity<Writer>::write (Writer*
    LOCK_BEFORE_WRITE ;
    if (m_lifeID > i_expectedLifeID)
    {
-      retval =  RS_MsgOverWritten;
+      retval =  RS_MsgOverwritten;
    } else if (m_lifeID < i_expectedLifeID)
    {
       retval =  RS_MsgNotYetWriten;

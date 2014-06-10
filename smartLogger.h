@@ -15,8 +15,8 @@
  *
  ******************************************************************************/
 
-#define GET_LOGGER(Severity, pWritter) \
-         new logMngr<pWritter>(Severity);
+#define GET_LOGGER(Severity, pWriter) \
+         new logMngr<pWriter>(Severity);
 
 #define LOG_MSG(pLogger, Text, Severity) \
                pLogger->write(Text, __PRETTY_FUNCTION__, time(0), pthread_self(), Severity, false);  

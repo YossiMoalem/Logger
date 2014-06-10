@@ -7,33 +7,19 @@
 //============================================================================
 template <class Writer>
 logMngr<Writer>::logMngr(int i_flushSeverity) : 
-   m_pWriter(new Writer),
    m_flushSeverity(i_flushSeverity),
-   m_msgTokenMngr(NUM_OF_LOG_MSGS)
+   m_msgTokenMngr(NUM_OF_LOG_MSGS),
+   m_outputHandler(new outputHandler<Writer>(m_msgs, m_flushTokenHolder))
 {
    loggerStatistics::instance(); //Just in order to create the statistics mngr....
 
-   sem_init (&m_shutDownSem, 0, 1);
-   sem_wait(&m_shutDownSem);
 
    pthread_t                   outputWriterThread;
    pthread_attr_t attr;
    
-   int s = pthread_attr_init(&attr);
-   if (s != 0)
-   {
-      m_pWriter->write_error ("Error while trying to set writer thread attribute. Logger will be disabled!");
-   }
-   else
-   {
-      s = pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-      if (s != 0)
-      {
-         m_pWriter->write_error("Error while trying to set thread as detachable. Logger will be disabled");
-      } else {
-         pthread_create(&outputWriterThread,&attr,&outputHandler<Writer>::startOutputWriterThread,this);
-      }
-   }
+   pthread_attr_init(&attr); //Always succeeds on Linux
+   pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);//detachstate is fine, so it always succeeds...
+   pthread_create(&outputWriterThread,&attr,&outputHandler<Writer>::startOutputWriterThread,m_outputHandler);
 
 }
 
@@ -41,8 +27,8 @@ logMngr<Writer>::logMngr(int i_flushSeverity) :
 template <class Writer>
 logMngr<Writer>::~logMngr()
 {
-   delete (m_pWriter); 
-   m_pWriter = 0;
+   delete (m_outputHandler);
+   m_outputHandler = 0;
 }
 
 //=============================================================================
@@ -83,8 +69,7 @@ void logMngr<Writer>::shutDown()
    m_flushTokenHolder.addToken(SHUTDOWN_ENTRY);
 
    //Wait for the writer to finish.
-   sem_wait(&m_shutDownSem);
-
+   m_outputHandler->waitForOutputToComplete();
    loggerStatistics::instance()->print();
 
 }

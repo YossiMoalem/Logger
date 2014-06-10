@@ -25,10 +25,10 @@ class logMsgFormatterWriter
 /******************************************************************************\
  * Simple writter that writes the lof to file-descriptor.
  ******************************************************************************/
-class fileLogFormatterWritter : public logMsgFormatterWriter
+class fileLogFormatterWriter : public logMsgFormatterWriter
 {
    public:
-      fileLogFormatterWritter () : m_outputFile(stdout)
+      fileLogFormatterWriter () : m_outputFile(stdout)
       {}
 
       void setFd (FILE* i_outputFile)
@@ -70,7 +70,6 @@ class fileLogFormatterWritter : public logMsgFormatterWriter
          fprintf(m_outputFile, "%s\n",i_pErrorMessage);
       }
 
-      ~fileLogFormatterWritter(){}
    private:
       FILE* m_outputFile;
 };

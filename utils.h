@@ -15,5 +15,6 @@ ss<< MSG <<std::endl;\
 std::cerr << ss.str();}\
 }while(0);
 
+#define PRINT(MSG) PRINT_DEBUG(-1, MSG)
 
 #endif

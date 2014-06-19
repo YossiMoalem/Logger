@@ -54,8 +54,10 @@ class loggerStatistics
          logMsgEntity_setWhileInProgress,
          logMsgEntity_setWhileBeingFlushed,
          logMsgEntity_writeWhileBeingFlushed,
+         outputWriter_writeMsgAttempts,
          outputWriter_CpuYield,
          outputWriter_overwrittenMsgs,
+         flushToken_numOfTokens,
          counter_last //MUST be last!
       };
 

@@ -5,12 +5,14 @@ loggerStatistics*  loggerStatistics::s_instance = NULL;
 pthread_mutex_t    loggerStatistics::m_creationLock;
 
 const char* const loggerStatistics::CounterDesc[] = {
-   "Token Manager : Number of failed attempts to create Token                     ",
-   "logMsgEntity  : Number of attempts to set msg while it was being set          ",
-   "logMsgEntity  : Number of attempts to set msg while it was being flushed      ",
-   "logMsgEntity  : Number of attempts to write  msg while it was being flushed   ",
-   "outputWritter : Number of CPU Yield (k) due to wait for message to be written ",
-   "outputWritter : Number of overwritten messages                                ",
+   "Token Manager       : Number of failed attempts to create Token                              ",
+   "logMsgEntity        : Number of attempts to set msg while it was being set                   ",
+   "logMsgEntity        : Number of attempts to set msg while it was being flushed               ",
+   "logMsgEntity        : Number of attempts to write  msg while it was being flushed            ",
+   "outputWritter       : Number of attempts to write msg (Should be same as num of flush tokens ",
+   "outputWritter       : Number of CPU Yield (k) due to wait for message to be written          ",
+   "outputWritter       : Number of overwritten messages                                         ",
+   "FlushTokenHolder    : Number of tokens                                                       ",
    };
 
 loggerStatistics::loggerStatistics ()
@@ -37,9 +39,9 @@ loggerStatistics* loggerStatistics::instance()
 void loggerStatistics::print ()
 {
 #ifdef STATISTICS
-   PRINT_DEBUG ("******* Statistics **********");
+   PRINT("******* Statistics **********");
    for (int i = 0; i < counter_last; ++i)
-      PRINT_DEBUG(CounterDesc[i]<<  " : " << m_countersValue[i] );
+      PRINT(CounterDesc[i]<<  " : " << m_countersValue[i] );
 #endif
 }
 

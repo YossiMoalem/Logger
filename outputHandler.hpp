@@ -18,13 +18,19 @@ void outputHandler<Writer>::startMainLoop ()
 {
    sem_init (&m_shutDownSem, 0, 1);
    sem_wait(&m_shutDownSem);
-   bool                 shouldContinue  = true;
+
+   sem_init (&m_isEmptySem, 0, 1);
+
+   //True untill we get shutdowm msg.
+   bool shouldContinue  = true;
 
    while (true == shouldContinue)
    {
-      // TODO change the busy loop on the empty queue condition
+      sem_wait(&m_isEmptySem);
       while (!m_flushTokenHolder.isEmpty())
       {
+         loggerStatistics::instance()->inc_counter(loggerStatistics::outputWriter_writeMsgAttempts);
+
          msgTokenMngr::msg_token_t  entryIdentifier = m_flushTokenHolder.getToken();
 
          if (IS_SHUTDOWN_IDENT(entryIdentifier))
@@ -46,22 +52,21 @@ void outputHandler<Writer>::startMainLoop ()
          int curIndex =  startIndex - NUM_OF_RECORDS_TO_FLUSH + 1;
          if (curIndex < 0)
          {
+            //this is the first round, start from the begining of the log
             if (startLifeID == 1)
             {
-               //The first message will be inserted in index 1
-               curIndex = 1;
+               curIndex = 0;
             }
             else
             {
-               curIndex+=NUM_OF_LOG_MSGS;
+               curIndex += NUM_OF_LOG_MSGS;
                --expectedLifeID;
             }
          }
          m_pWriter->startBlock();
-         bool shouldContinue = true;
          bool lastPrinted = false;
 
-         while (true == shouldContinue)
+         while ( false == lastPrinted )
          {
             int cpuYieldCounter = 0;
             typename logMsgEntity<Writer>::resultStatus retval = logMsgEntity<Writer>::RS_Success;
@@ -92,6 +97,7 @@ void outputHandler<Writer>::startMainLoop ()
 
             } while(retval == logMsgEntity<Writer>::RS_MsgNotYetWriten);
 
+            lastPrinted = ((unsigned int) curIndex == startIndex);
 
             ++curIndex;
             if (curIndex >= NUM_OF_LOG_MSGS)
@@ -100,11 +106,6 @@ void outputHandler<Writer>::startMainLoop ()
                expectedLifeID++;
             }   
 
-            if (lastPrinted == true)
-            {
-               shouldContinue = false;
-            }
-            lastPrinted = ((unsigned int) curIndex == startIndex);
          }
       }//end while queue not empty
    }// end while should continue

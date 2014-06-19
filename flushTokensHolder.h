@@ -52,6 +52,7 @@ void FlushTokensHolder::addToken(msgTokenMngr::msg_token_t i_newToken)
 
    m_queueFlushStartIndex.push(i_newToken);
    pthread_mutex_unlock(&m_startIndexMutex);
+   loggerStatistics::instance()->inc_counter(loggerStatistics::flushToken_numOfTokens);
 }
 
 /******************************************************************************/

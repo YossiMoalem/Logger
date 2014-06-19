@@ -55,22 +55,27 @@ BOOST_STATIC_ASSERT ((sizeof(msgTokenMngr::msg_token_t ) >= 8));
 inline void msgTokenMngr::getNextIndex (unsigned int &o_index,unsigned int& o_lifeID,msg_token_t &o_entryIdentifier) 
 { 
    msg_token_t oldVal  = 0;
+   msg_token_t newToken ;
+
    do 
    {
       loggerStatistics::instance()->inc_counter(loggerStatistics::msgTokenMngr_failedAttempts);
       oldVal = m_curEntryIndent ;
       o_index  = GET_CUR_INDEX (oldVal);
       o_lifeID = GET_CUR_LIFE_ID (oldVal);
-      o_index++ ;
+      o_entryIdentifier = oldVal;
+
+      unsigned int next_index = o_index + 1;
+      unsigned int next_LID = o_lifeID;
       
-      if (m_numOfMsgs == o_index)
+      if (m_numOfMsgs == next_index)
       {   
-         o_index = 0;
-         o_lifeID++;
+         next_index = 0;
+         next_LID++;
       }
-      assert (m_numOfMsgs>o_index);
-      o_entryIdentifier = CREATE_ENTRY_IDENT (o_lifeID,o_index);
-   } while (! __sync_bool_compare_and_swap (&m_curEntryIndent, oldVal, o_entryIdentifier));
+      assert (m_numOfMsgs>next_index);
+      newToken = CREATE_ENTRY_IDENT (next_LID,next_index);
+   } while (! __sync_bool_compare_and_swap (&m_curEntryIndent, oldVal, newToken));
    
    loggerStatistics::instance()->dec_counter(loggerStatistics::msgTokenMngr_failedAttempts);
 }

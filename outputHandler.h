@@ -33,6 +33,9 @@ class outputHandler
        ************************************************************************/
       void waitForOutputToComplete ();
 
+//TODO: ...
+      void release() { sem_post(&m_isEmptySem);}
+
       ~outputHandler()
       {
          delete (m_pWriter); 
@@ -57,8 +60,9 @@ class outputHandler
    private:
       logMsgEntity<Writer>  (&m_msgs)[NUM_OF_LOG_MSGS] ;
       FlushTokensHolder&    m_flushTokenHolder;
-      sem_t                 m_shutDownSem;
       Writer*               m_pWriter;
+      sem_t                 m_shutDownSem;
+      sem_t                 m_isEmptySem;
 };
 
 #include "outputHandler.hpp"

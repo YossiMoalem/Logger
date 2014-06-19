@@ -8,8 +8,8 @@
 
 #include <semaphore.h>
 
-#define NUM_OF_RECORDS_TO_FLUSH 20 
-#define NUM_OF_LOG_MSGS  (NUM_OF_RECORDS_TO_FLUSH*10)
+#define NUM_OF_RECORDS_TO_FLUSH 30
+#define NUM_OF_LOG_MSGS  1000
 
 //static_assert (NUM_OF_LOG_MSGS<0xFFFFFFFF);
 /*****************************************************************************\
@@ -76,7 +76,7 @@ class logMngr
     *****************************************************************************/
    Writer* getWriter ()
    {
-      return m_outputHandler->getWriter();
+      return m_pOutputHandler->getWriter();
    }
 
    private:     
@@ -92,7 +92,7 @@ class logMngr
    int 		                m_flushSeverity;
    msgTokenMngr                 m_msgTokenMngr;
    FlushTokensHolder            m_flushTokenHolder;
-   outputHandler<Writer>*       m_outputHandler;
+   outputHandler<Writer>*       m_pOutputHandler;
 };
 
 #include "logMngr.hpp"

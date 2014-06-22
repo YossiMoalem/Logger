@@ -52,7 +52,7 @@ int logMngr<Writer>::write (const char *const  i_pMsgText, const char *const  i_
       //For now, I'll live this ugliness, for simplicity...
       if (shouldReleaseWriter)
       {
-         m_pOutputHandler->release();
+         m_pOutputHandler->startFlushing();
       }
    }
 

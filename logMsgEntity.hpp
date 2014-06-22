@@ -88,6 +88,7 @@ typename logMsgEntity<Writer>::resultStatus  logMsgEntity<Writer>::set (const ch
          assert (0);
          retval = RS_InternalError;
    }
+   assert (retval != RS_Unset)
    return retval;
 }
 
@@ -108,7 +109,6 @@ typename logMsgEntity<Writer>::resultStatus logMsgEntity<Writer>::write (Writer*
    } 
    else
    {   
-
       switch (m_state)
       {
          case MS_Unused:
@@ -120,7 +120,7 @@ typename logMsgEntity<Writer>::resultStatus logMsgEntity<Writer>::write (Writer*
             //Notice, it cound be that "our" msg is being overwritten, and we have nothing to do now
             //BUT it coulld also be that our msg is just being written, so we should wait for it (?) ...
             m_state = MS_Flushed;
-            i_logMsgFormatterWriter->writeError ("Massage is missing herei: Internal Logger Error");
+            i_logMsgFormatterWriter->writeError ("Massage is missing here: Internal Logger Error");
             retval =  RS_MsgBusy;
          case MS_Ready:
             m_state = MS_BeingFlushed;
@@ -133,15 +133,18 @@ typename logMsgEntity<Writer>::resultStatus logMsgEntity<Writer>::write (Writer*
                i_logMsgFormatterWriter->writeWithStack (getMsgData(), stackSymbol, STACK_SIZE);
             }
             m_state = MS_Flushed;
+            retval = RS_Success;
             break;
          case MS_BeingFlushed:
             loggerStatistics::instance()->inc_counter(loggerStatistics::logMsgEntity_writeWhileBeingFlushed);
             //TODO: What to do here??????
-            //Maybe do flash it, and mark it as flused, so when we finish the first flush, we'll know we had this message twice???
+            //Maybe do flash it, and mark it as flused, so when we finish the first flush, 
+            //we'll know we had this message twice???
             //Can we really be here?? there is only one reader, so only single thread put msg. in being flushed...
             retval =  RS_MsgBusy;
          case MS_Flushed:
             //Already flushed this message. Nothing to do ....
+            retval = RS_Success;
             break;
          default:
             assert (0);
@@ -150,6 +153,7 @@ typename logMsgEntity<Writer>::resultStatus logMsgEntity<Writer>::write (Writer*
    }
 
    UNLOCK_AFTER_WRITE ;
+   assert (retval != RS_Unset);
    return retval;
 }
 

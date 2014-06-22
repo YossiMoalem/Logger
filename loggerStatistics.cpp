@@ -9,7 +9,7 @@ const char* const loggerStatistics::CounterDesc[] = {
    "logMsgEntity        : Number of attempts to set msg while it was being set                   ",
    "logMsgEntity        : Number of attempts to set msg while it was being flushed               ",
    "logMsgEntity        : Number of attempts to write  msg while it was being flushed            ",
-   "outputWritter       : Number of attempts to write msg (Should be same as num of flush tokens ",
+   "outputWritter       : Number of attempts to write msg                                        ",
    "outputWritter       : Number of CPU Yield (k) due to wait for message to be written          ",
    "outputWritter       : Number of overwritten messages                                         ",
    "FlushTokenHolder    : Number of tokens                                                       ",

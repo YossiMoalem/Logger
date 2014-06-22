@@ -27,10 +27,9 @@ void outputHandler<Writer>::startMainLoop ()
    while (true == shouldContinue)
    {
       sem_wait(&m_isEmptySem);
+      loggerStatistics::instance()->inc_counter(loggerStatistics::outputWriter_writeMsgAttempts);
       while (!m_flushTokenHolder.isEmpty())
       {
-         loggerStatistics::instance()->inc_counter(loggerStatistics::outputWriter_writeMsgAttempts);
-
          msgTokenMngr::msg_token_t  entryIdentifier = m_flushTokenHolder.getToken();
 
          if (IS_SHUTDOWN_IDENT(entryIdentifier))
@@ -68,35 +67,7 @@ void outputHandler<Writer>::startMainLoop ()
 
          while ( false == lastPrinted )
          {
-            int cpuYieldCounter = 0;
-            typename logMsgEntity<Writer>::resultStatus retval = logMsgEntity<Writer>::RS_Success;
-            do {
-               retval = m_msgs[curIndex].write(m_pWriter,expectedLifeID);
-               if (retval == logMsgEntity<Writer>::RS_MsgNotYetWriten)
-               {
-                  sched_yield();
-#if DEBUG >= 7 || defined STATISTICS
-                  ++ cpuYieldCounter; 
-                  cpuYieldCounter %= 1024;
-                  if (cpuYieldCounter == 0)
-                  {
-                     loggerStatistics::instance()->inc_counter(loggerStatistics::outputWriter_CpuYield);
-                     PRINT_DEBUG (7, "CPU yield 1024 times for expected LID " << expectedLifeID 
-                           <<" Index = " << curIndex 
-                           <<" Expected Token:" << CREATE_ENTRY_IDENT(expectedLifeID, curIndex))
-                  }
-#endif   //DEBUG >= 7 || defined STATISTICS                  
-               } //logMsgEntity::RS_MsgNotYetWriten
-               if (retval == logMsgEntity<Writer>::RS_MsgOverwritten)
-               {
-                  loggerStatistics::instance()->inc_counter(loggerStatistics::outputWriter_overwrittenMsgs);
-                  m_pWriter->writeError("the entry was overwritten during the flush");
-                  PRINT_DEBUG(4, "Message index " <<curIndex<<" was overwritten during flash."
-                        <<"Expected LID = " <<expectedLifeID );
-               }
-
-            } while(retval == logMsgEntity<Writer>::RS_MsgNotYetWriten);
-
+            printSingleMsg(curIndex, expectedLifeID);
             lastPrinted = ((unsigned int) curIndex == startIndex);
 
             ++curIndex;
@@ -110,6 +81,41 @@ void outputHandler<Writer>::startMainLoop ()
       }//end while queue not empty
    }// end while should continue
    sem_post(&m_shutDownSem);
+}
+
+template <class Writer>
+void outputHandler<Writer>::printSingleMsg (unsigned int index, unsigned int expectedLifeID)
+{
+   typename logMsgEntity<Writer>::resultStatus retval = logMsgEntity<Writer>::RS_Success;
+   do {
+      retval = m_msgs[index].write(m_pWriter, expectedLifeID);
+      if (retval == logMsgEntity<Writer>::RS_MsgNotYetWriten)
+      {
+         sched_yield();
+#if DEBUG >= 7 || defined STATISTICS
+         static int cpuYieldCounter = 0;
+         ++ cpuYieldCounter; 
+         cpuYieldCounter %= 1024;
+         if (cpuYieldCounter == 0)
+         {
+            loggerStatistics::instance()->inc_counter(loggerStatistics::outputWriter_CpuYield);
+            PRINT_DEBUG (7, "CPU yield 1024 times for expected LID " << expectedLifeID 
+                  <<" Index = " << index 
+                  <<" Expected Token:" << CREATE_ENTRY_IDENT(expectedLifeID, index))
+         }
+#endif   //DEBUG >= 7 || defined STATISTICS                  
+      } //logMsgEntity::RS_MsgNotYetWriten
+      if (retval == logMsgEntity<Writer>::RS_MsgOverwritten)
+      {
+         loggerStatistics::instance()->inc_counter(loggerStatistics::outputWriter_overwrittenMsgs);
+         m_pWriter->writeError("the entry was overwritten during the flush");
+         PRINT_DEBUG(4, "Message index " <<index<<" was overwritten during flash."
+               <<"Expected LID = " <<expectedLifeID );
+      }
+
+   } while(retval == logMsgEntity<Writer>::RS_MsgNotYetWriten);
+
+
 }
 
 template <class Writer>

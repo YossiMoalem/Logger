@@ -33,8 +33,12 @@ class outputHandler
        ************************************************************************/
       void waitForOutputToComplete ();
 
-//TODO: ...
-      void release() { sem_post(&m_isEmptySem);}
+      /************************************************************************\
+       * Indicate that there are messages ready for flushing
+       * This will start the outputWritter thread flush.
+       * As this is dedicated thread, this is non blocking, non sync
+       ************************************************************************/
+      void startFlushing() { sem_post(&m_isEmptySem);}
 
       ~outputHandler()
       {
@@ -52,6 +56,7 @@ class outputHandler
    }
    private:
       void startMainLoop ();
+      void printSingleMsg (unsigned int index, unsigned int expectedLifeID);
 
       /* Non-Copyable */ 
       outputHandler (const outputHandler&);

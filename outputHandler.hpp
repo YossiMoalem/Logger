@@ -117,13 +117,15 @@ void outputHandler<Writer>::printSingleMsg (unsigned int index, unsigned int exp
       }
 
    } while(retval == logMsgEntity<Writer>::RS_MsgNotYetWriten);
-
-
 }
 
 template <class Writer>
 void outputHandler<Writer>::waitForOutputToComplete ()
 {
+   //Because the LogMngr calls startFlushing() from write()
+   //if the queue is empty while inserting the shutdown msg, 
+   //the semaphore willnot be released. Therefoe we call it from here as well...
+   startFlushing();
    //Wait here untill the semaphore is unlocked. 
    //Once it is unlocked, the main loop has finished...
    sem_wait(&m_shutDownSem);

@@ -50,6 +50,8 @@ int logMngr<Writer>::write (const char *const  i_pMsgText, const char *const  i_
       //However, in order for the flushTokenHolder not to be aware of the outputHandler we 
       //shold either do it from here, or, install observer in the flushTokenHolder.
       //For now, I'll live this ugliness, for simplicity...
+      //Another ugly side effect is that we need to call the startFlushing() manually
+      //after sending shutdowm msg.
       if (shouldReleaseWriter)
       {
          m_pOutputHandler->startFlushing();

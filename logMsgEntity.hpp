@@ -88,7 +88,7 @@ typename logMsgEntity<Writer>::resultStatus  logMsgEntity<Writer>::set (const ch
          assert (0);
          retval = RS_InternalError;
    }
-   assert (retval != RS_Unset)
+   assert (retval != RS_Unset);
    return retval;
 }
 

@@ -15,7 +15,7 @@ template <class Writer>
 class outputHandler
 {
    public:
-      outputHandler( logMsgEntity<Writer> (&i_msgs)[NUM_OF_LOG_MSGS],
+      outputHandler( logMessages<Writer> &i_msgs,
                      FlushTokensHolder&   i_flushTokenHolder):
                   m_msgs(i_msgs),
                   m_flushTokenHolder(i_flushTokenHolder),
@@ -63,11 +63,11 @@ class outputHandler
       outputHandler& operator= (const outputHandler&);
 
    private:
-      logMsgEntity<Writer>  (&m_msgs)[NUM_OF_LOG_MSGS] ;
-      FlushTokensHolder&    m_flushTokenHolder;
-      Writer*               m_pWriter;
-      sem_t                 m_shutDownSem;
-      sem_t                 m_isEmptySem;
+      logMessages <Writer>&     m_msgs;
+      FlushTokensHolder&        m_flushTokenHolder;
+      Writer*                   m_pWriter;
+      sem_t                     m_shutDownSem;
+      sem_t                     m_isEmptySem;
 };
 
 #include "outputHandler.hpp"

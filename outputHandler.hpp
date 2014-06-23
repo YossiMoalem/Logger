@@ -42,12 +42,6 @@ void outputHandler<Writer>::startMainLoop ()
          unsigned int startIndex = GET_CUR_INDEX(entryIdentifier);
          unsigned int startLifeID = GET_CUR_LIFE_ID(entryIdentifier);
          unsigned int expectedLifeID = startLifeID;
-
-         PRINT_DEBUG (2, "Popped identifier " <<entryIdentifier
-               <<"(Index : " <<startIndex 
-               <<"LifeID : " <<startLifeID <<")");
-
-
          int curIndex =  startIndex - NUM_OF_RECORDS_TO_FLUSH + 1;
          if (curIndex < 0)
          {
@@ -62,7 +56,15 @@ void outputHandler<Writer>::startMainLoop ()
                --expectedLifeID;
             }
          }
+
+         PRINT_DEBUG (2, "Popped identifier " <<entryIdentifier
+               <<"(Index : " <<startIndex 
+               <<" LifeID : " <<startLifeID <<")"
+               <<" Start Index: " << curIndex 
+               <<" STart Life ID: " << expectedLifeID);
          m_pWriter->startBlock();
+
+
          bool lastPrinted = false;
 
          while ( false == lastPrinted )
@@ -105,11 +107,12 @@ void outputHandler<Writer>::printSingleMsg (unsigned int index, unsigned int exp
          }
 #endif   //DEBUG >= 7 || defined STATISTICS                  
       } //logMsgEntity::RS_MsgNotYetWriten
+
       if (retval == logMsgEntity<Writer>::RS_MsgOverwritten)
       {
          loggerStatistics::instance()->inc_counter(loggerStatistics::outputWriter_overwrittenMsgs);
-         m_pWriter->writeError("the entry was overwritten during the flush");
-         PRINT_DEBUG(4, "Message index " <<index<<" was overwritten during flash."
+         m_pWriter->writeError("the entry was overwritten before the flush");
+         PRINT_DEBUG(4, "Message index " <<index<<" was overwritten before flash."
                <<"Expected LID = " <<expectedLifeID );
       }
 

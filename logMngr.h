@@ -1,7 +1,7 @@
 #ifndef LOG_MNGR_H
 #define LOG_MNGR_H
 
-#include "logMsgEntity.h"
+#include "logMessages.h"
 #include "msgTokenMngr.h"
 #include "flushTokensHolder.h"
 
@@ -9,9 +9,6 @@
 #include <semaphore.h>
 
 #define NUM_OF_RECORDS_TO_FLUSH 30
-#define NUM_OF_LOG_MSGS  1000
-
-//static_assert (NUM_OF_LOG_MSGS<0xFFFFFFFF);
 /*****************************************************************************\
  * logMngr:
  * This is the main interface/entry point for the logger.
@@ -34,8 +31,6 @@ class outputHandler;
 template <class Writer>
 class logMngr
 {
-   //The outputHandler should access the logMessages
-   friend class outputHandler<Writer>;
 
    public:
 
@@ -88,7 +83,7 @@ class logMngr
 
    private:
 
-   logMsgEntity<Writer>         m_msgs[NUM_OF_LOG_MSGS] ;
+   logMessages <Writer>         m_msgs;
    int 		                m_flushSeverity;
    msgTokenMngr                 m_msgTokenMngr;
    FlushTokensHolder            m_flushTokenHolder;

@@ -1,10 +1,7 @@
-Improve:
-typedefs for LID, Index
-decrease coupling between logMngr to outputHandler
-
-Features:
-
-line numbers in stackwalker. (No idea how to do this, in reasenable time...)
 filter should be extracted, and put as policy
+add namespaces
 
+typedefs for LID, Index
+LogMsgEntity should not write the error. Let the output handler do it.
+line numbers in stackwalker. (No idea how to do this, in reasenable time...)
 In logMsgEntity, move all the help classes out, so we will have shorter names...)

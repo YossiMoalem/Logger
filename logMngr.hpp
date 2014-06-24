@@ -61,7 +61,7 @@ int logMngr<Writer>::write (const char *const  i_pMsgText, const char *const  i_
    PRINT_DEBUG(1, entryIdentifier
          << "|Severity: " <<i_severity 
          << " Time:  "     <<i_time 
-         << " ThreadID: "   <<i_tid 
+         << " ThreadID: "   <<(unsigned int) i_tid 
          << " FuncName: "   << i_pFuncName 
          << " Message: "   <<i_pMsgText);
    typename logMsgEntity<Writer>::resultStatus res = logMsgEntity<Writer>::RS_Unset;

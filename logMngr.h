@@ -8,7 +8,7 @@
 
 #include <semaphore.h>
 
-#define NUM_OF_RECORDS_TO_FLUSH 30
+#define NUM_OF_RECORDS_TO_FLUSH 20
 /*****************************************************************************\
  * logMngr:
  * This is the main interface/entry point for the logger.

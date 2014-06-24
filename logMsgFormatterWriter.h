@@ -38,7 +38,7 @@ class fileLogFormatterWriter : public logMsgFormatterWriter
 
       void write (const msgData& i_msgData)
       {
-         fprintf(m_outputFile, "Severity %d: Time %ld: ThreadID %u: FuncName %s: Message %s\n",
+         fprintf(m_outputFile, "Severity: %d Time: %ld ThreadID: %u FuncName: %s Message: %s\n",
                i_msgData.m_severity, 
                i_msgData.m_time, 
                i_msgData.m_tid, 

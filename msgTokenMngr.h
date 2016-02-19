@@ -6,6 +6,8 @@
 #include "loggerStatistics.h"
 
 
+#define NUM_OF_LOG_MSGS  1000
+//static_assert (NUM_OF_LOG_MSGS<0xFFFFFFFF);
 #define WORD_SIZE 32 
 #define WORD_MAX_VAL 0xFFFFFFFF
 #define GET_CUR_INDEX(ENTRY_IDENT)  (((msgTokenMngr::msg_token_t) (ENTRY_IDENT)) & WORD_MAX_VAL)
@@ -31,13 +33,66 @@
 class msgTokenMngr
 {
    public:
-      typedef unsigned long long msg_token_t ;       
+        class msg_token_t
+        {
+         public:
+           typedef long long valueType ;
+           msg_token_t( ) = default;
+           msg_token_t( long long value ):
+               m_value( value )
+            {}
+           operator long long () const
+           {
+               return m_value;
+           }
+
+           long long get()
+           {
+               return m_value;
+           }
+
+           msg_token_t & operator -= ( int amount )
+           {
+               int newIndex = GET_CUR_INDEX( m_value ) - amount;
+               unsigned int newLID = GET_CUR_LIFE_ID ( m_value );
+               if ( newIndex < 0 )
+               {
+                   //this is the first round, start from the begining of the buffer
+                   if ( newLID == 1)
+                   {
+                       newIndex = 0;
+                   } else {
+                       newIndex += NUM_OF_LOG_MSGS;
+                       --newLID;
+                   }
+                   m_value = CREATE_ENTRY_IDENT (newLID,newIndex);
+                   return * this;
+               }
+           }
+
+           
+           msg_token_t operator++()
+           {
+               int newIndex = GET_CUR_INDEX( m_value ) + 1;
+               unsigned int newLID = GET_CUR_LIFE_ID ( m_value );
+               if (newIndex >= NUM_OF_LOG_MSGS)
+               {   
+                   newIndex -= NUM_OF_LOG_MSGS;
+                   ++newLID;
+               }   
+               m_value = CREATE_ENTRY_IDENT (newLID,newIndex);
+               return *this;
+           }
+
+         private:
+           long long m_value;
+        };
 
       msgTokenMngr(unsigned int i_numOfMsgs): m_numOfMsgs(i_numOfMsgs),
       m_curEntryIndent(CREATE_ENTRY_IDENT(1,0))
    {}
 
-      void getNextIndex (unsigned int &o_index,unsigned int& o_lifeID,msg_token_t &o_entryIdentifier); 
+      void getNextIndex ( msg_token_t &o_entryIdentifier ); 
 
    private:
    /* Non-Copyable */ 
@@ -45,28 +100,26 @@ class msgTokenMngr
    msgTokenMngr& operator= (const msgTokenMngr&);
 
    private:
-      unsigned int      m_numOfMsgs;
-      msg_token_t       m_curEntryIndent;
+      unsigned int                  m_numOfMsgs;
+      msg_token_t::valueType       m_curEntryIndent;
 };
 
 BOOST_STATIC_ASSERT ((sizeof(msgTokenMngr::msg_token_t ) >= 8));
 
 
-inline void msgTokenMngr::getNextIndex (unsigned int &o_index,unsigned int& o_lifeID,msg_token_t &o_entryIdentifier) 
+inline void msgTokenMngr::getNextIndex ( msg_token_t &o_entryIdentifier ) 
 { 
-   msg_token_t oldVal  = 0;
+   msg_token_t currentToken  = 0;
    msg_token_t newToken ;
 
    do 
    {
       loggerStatistics::instance()->inc_counter(loggerStatistics::msgTokenMngr_failedAttempts);
-      oldVal = m_curEntryIndent ;
-      o_index  = GET_CUR_INDEX (oldVal);
-      o_lifeID = GET_CUR_LIFE_ID (oldVal);
-      o_entryIdentifier = oldVal;
+      currentToken = m_curEntryIndent ;
+      o_entryIdentifier = currentToken;
 
-      unsigned int next_index = o_index + 1;
-      unsigned int next_LID = o_lifeID;
+      unsigned int next_index = GET_CUR_INDEX( currentToken ) + 1;
+      unsigned int next_LID = GET_CUR_LIFE_ID (currentToken);
       
       if (m_numOfMsgs == next_index)
       {   
@@ -75,12 +128,9 @@ inline void msgTokenMngr::getNextIndex (unsigned int &o_index,unsigned int& o_li
       }
       assert (m_numOfMsgs>next_index);
       newToken = CREATE_ENTRY_IDENT (next_LID,next_index);
-   } while (! __sync_bool_compare_and_swap (&m_curEntryIndent, oldVal, newToken));
+   } while (! __sync_bool_compare_and_swap (&m_curEntryIndent, currentToken.get(), newToken.get()));
    
    loggerStatistics::instance()->dec_counter(loggerStatistics::msgTokenMngr_failedAttempts);
 }
-
-
-
 
 #endif

@@ -2,6 +2,7 @@
 ###################
 *.o
 *.so
+*.gch
 a.out
 
 #   Temp files    #

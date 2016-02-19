@@ -39,46 +39,15 @@ void outputHandler<Writer>::startMainLoop ()
             break;
          }
 
-         unsigned int startIndex = GET_CUR_INDEX(entryIdentifier);
-         unsigned int startLifeID = GET_CUR_LIFE_ID(entryIdentifier);
-         unsigned int expectedLifeID = startLifeID;
-         int curIndex =  startIndex - NUM_OF_RECORDS_TO_FLUSH + 1;
-         if (curIndex < 0)
+
+         msgTokenMngr::msg_token_t  currentTokenToPrint = entryIdentifier - NUM_OF_RECORDS_TO_FLUSH + 1;
+         msgTokenMngr::msg_token_t  lastToken = entryIdentifier;
+
+         while ( currentTokenToPrint != lastToken )
          {
-            //this is the first round, start from the begining of the log
-            if (startLifeID == 1)
-            {
-               curIndex = 0;
-            }
-            else
-            {
-               curIndex += NUM_OF_LOG_MSGS;
-               --expectedLifeID;
-            }
-         }
+             printSingleMsg( currentTokenToPrint );
 
-         PRINT_DEBUG (2, "Popped identifier " <<entryIdentifier
-               <<"(Index : " <<startIndex 
-               <<" LifeID : " <<startLifeID <<")"
-               <<" Start Index: " << curIndex 
-               <<" STart Life ID: " << expectedLifeID);
-         m_pWriter->startBlock();
-
-
-         bool lastPrinted = false;
-
-         while ( false == lastPrinted )
-         {
-            printSingleMsg(curIndex, expectedLifeID);
-            lastPrinted = ((unsigned int) curIndex == startIndex);
-
-            ++curIndex;
-            if (curIndex >= NUM_OF_LOG_MSGS)
-            {   
-               curIndex -= NUM_OF_LOG_MSGS;
-               expectedLifeID++;
-            }   
-
+             ++currentTokenToPrint;
          }
       }//end while queue not empty
    }// end while should continue
@@ -86,11 +55,11 @@ void outputHandler<Writer>::startMainLoop ()
 }
 
 template <class Writer>
-void outputHandler<Writer>::printSingleMsg (unsigned int index, unsigned int expectedLifeID)
+void outputHandler<Writer>::printSingleMsg ( msgTokenMngr::msg_token_t  tokenToPrint )
 {
    typename logMsgEntity<Writer>::resultStatus retval = logMsgEntity<Writer>::RS_Success;
    do {
-      retval = m_msgs[index].write(m_pWriter, expectedLifeID);
+      retval = m_msgs.write(m_pWriter, tokenToPrint );
       if (retval == logMsgEntity<Writer>::RS_MsgNotYetWriten)
       {
          sched_yield();
@@ -112,8 +81,10 @@ void outputHandler<Writer>::printSingleMsg (unsigned int index, unsigned int exp
       {
          loggerStatistics::instance()->inc_counter(loggerStatistics::outputWriter_overwrittenMsgs);
          m_pWriter->writeError("the entry was overwritten before the flush");
+         /*
          PRINT_DEBUG(4, "Message index " <<index<<" was overwritten before flash."
                <<"Expected LID = " <<expectedLifeID );
+               */
       }
 
    } while(retval == logMsgEntity<Writer>::RS_MsgNotYetWriten);

@@ -35,11 +35,8 @@ logMngr<Writer>::~logMngr()
 template <class Writer>
 int logMngr<Writer>::write (const char *const  i_pMsgText, const char *const  i_pFuncName, time_t i_time, pid_t i_tid, int i_severity,bool i_writeStack)
 {
-   unsigned int curIndex = 0;
-   unsigned int curLifeID = 0;
    msgTokenMngr::msg_token_t entryIdentifier = 0;
-
-   m_msgTokenMngr.getNextIndex(curIndex,curLifeID,entryIdentifier);
+   m_msgTokenMngr.getNextIndex( entryIdentifier );
 
    if (i_severity >= m_flushSeverity)
    {
@@ -66,8 +63,8 @@ int logMngr<Writer>::write (const char *const  i_pMsgText, const char *const  i_
          << " Message: "   <<i_pMsgText);
    typename logMsgEntity<Writer>::resultStatus res = logMsgEntity<Writer>::RS_Unset;
    do {
-      res = m_msgs[curIndex].set(i_pMsgText,i_pFuncName,i_time,i_tid,i_severity,curLifeID,i_writeStack);
-      //TODO need to handle/yield in case od retry,....
+      res = m_msgs.set( entryIdentifier, i_pMsgText,i_pFuncName,i_time,i_tid,i_severity,i_writeStack);
+      //TODO need to handle/yield in case of retry,....
    } while(res != logMsgEntity<Writer>::RS_Success );
    return 0;
 }

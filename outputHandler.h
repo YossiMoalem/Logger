@@ -56,7 +56,7 @@ class outputHandler
    }
    private:
       void startMainLoop ();
-      void printSingleMsg (unsigned int index, unsigned int expectedLifeID);
+      void printSingleMsg ( msgTokenMngr::msg_token_t  tokenToPrint );
 
       /* Non-Copyable */ 
       outputHandler (const outputHandler&);
